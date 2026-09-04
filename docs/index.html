@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRishti — Diabetic Retinopathy Screening</title>
+<meta name="description" content="An end-to-end diabetic retinopathy screening pipeline: fundus image in, ICDR grade, referral decision, lesion overlay, Grad-CAM and a patient report out. MATLAB analysis, Flask delivery.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230f2a1f'/><circle cx='50' cy='50' r='24' fill='%234f8c6d'/><circle cx='50' cy='50' r='9' fill='%23cfe3d8'/></svg>">
+<style>
+  :root {
+    --dark-green: #0f2a1f;
+    --mid-green: #16332a;
+    --accent: #4f8c6d;
+    --accent-bright: #6fb890;
+    --light-green: #cfe3d8;
+    --cream: #f2ede4;
+    --warn: #b03a2e;
+    --page: #faf9f6;
+    --ink: #1c2a22;
+    --muted: #5c6b62;
+    --line: #e2ded4;
+    --radius: 14px;
+    --maxw: 1080px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--page);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+  a { color: var(--accent); }
+
+  code, pre {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  code {
+    background: rgba(79,140,109,0.12);
+    padding: 0.12em 0.4em;
+    border-radius: 5px;
+    font-size: 0.88em;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: linear-gradient(140deg, var(--dark-green) 0%, var(--mid-green) 70%, #1d4034 100%);
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 72px;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 58px 58px;
+    pointer-events: none;
+  }
+
+  .nav {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 26px 0;
+    flex-wrap: wrap;
+  }
+
+  .logo { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  .logo svg { display: block; }
+
+  .nav-links { display: flex; gap: 26px; font-size: 0.94rem; flex-wrap: wrap; }
+  .nav-links a { color: var(--light-green); text-decoration: none; opacity: 0.9; }
+  .nav-links a:hover { opacity: 1; color: #fff; }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--accent-bright); color: var(--dark-green); }
+  .btn-primary:hover { background: #85cba4; }
+  .btn-ghost { border-color: rgba(207,227,216,0.45); color: var(--light-green); }
+  .btn-ghost:hover { border-color: var(--light-green); color: #fff; }
+
+  .hero-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 56px;
+    align-items: center;
+    padding-top: 44px;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.74rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-bright);
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 3.35rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin: 0 0 20px;
+    font-weight: 700;
+  }
+
+  .lede { font-size: 1.1rem; color: rgba(242,237,228,0.85); margin: 0 0 30px; max-width: 46ch; }
+
+  .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+
+  /* retina visual */
+  .retina-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(207,227,216,0.18);
+    border-radius: 22px;
+    padding: 26px;
+    backdrop-filter: blur(6px);
+  }
+  .retina-card svg { width: 100%; height: auto; display: block; border-radius: 12px; }
+  .retina-legend {
+    display: flex; flex-wrap: wrap; gap: 8px 16px;
+    margin-top: 18px; font-size: 0.78rem; color: rgba(242,237,228,0.8);
+  }
+  .retina-legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  /* ---------- Sections ---------- */
+  section { padding: 84px 0; }
+  section.alt { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+  h2 {
+    font-size: clamp(1.6rem, 3.2vw, 2.15rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+    color: var(--dark-green);
+    font-weight: 700;
+  }
+
+  .section-lede { color: var(--muted); max-width: 62ch; margin: 0 0 40px; font-size: 1.03rem; }
+
+  h3 { font-size: 1.05rem; margin: 0 0 8px; color: var(--dark-green); letter-spacing: -0.01em; }
+
+  /* ---------- Pipeline ---------- */
+  .pipeline { display: flex; flex-direction: column; gap: 0; }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 22px;
+    align-items: start;
+    padding: 22px 0;
+    border-top: 1px solid var(--line);
+  }
+  .stage:last-child { border-bottom: 1px solid var(--line); }
+
+  .stage-num {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: var(--dark-green);
+    color: var(--light-green);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.05rem;
+  }
+  .stage-num.split { background: var(--accent); }
+
+  .stage-body p { margin: 0 0 10px; color: var(--muted); font-size: 0.96rem; }
+
+  .files { display: flex; flex-wrap: wrap; gap: 6px; }
+  .files code {
+    background: rgba(15,42,31,0.07);
+    color: var(--dark-green);
+    font-size: 0.78rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  /* ---------- Modes ---------- */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+  .mode {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px;
+    background: var(--page);
+  }
+  .mode.full { border-color: var(--accent); background: rgba(79,140,109,0.06); }
+
+  .mode-tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .mode.full .mode-tag { color: var(--dark-green); }
+
+  .mode h3 { margin: 8px 0 12px; }
+  .mode ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.94rem; }
+  .mode li { margin-bottom: 5px; }
+
+  /* ---------- Decisions ---------- */
+  .decisions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; }
+
+  .decision {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 20px;
+  }
+  .decision p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
+  /* ---------- Stack ---------- */
+  .stack { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .stack-card {
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .stack-card ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 0.92rem; }
+  .stack-card li { margin-bottom: 4px; }
+
+  /* ---------- Honesty ---------- */
+  .caveats {
+    background: var(--dark-green);
+    color: var(--cream);
+    border-radius: 20px;
+    padding: 40px;
+  }
+  .caveats h2 { color: var(--cream); }
+  .caveats ul { margin: 0; padding-left: 20px; }
+  .caveats li { margin-bottom: 10px; color: rgba(242,237,228,0.86); font-size: 0.97rem; }
+  .caveats code { background: rgba(255,255,255,0.12); color: var(--light-green); }
+
+  .disclaimer {
+    margin-top: 28px;
+    padding: 18px 22px;
+    border-radius: 12px;
+    background: rgba(176,58,46,0.18);
+    border: 1px solid rgba(176,58,46,0.5);
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 46px 0;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .modes, .decisions, .stack { grid-template-columns: 1fr; }
+    section { padding: 60px 0; }
+    .caveats { padding: 28px; }
+    .stage { grid-template-columns: 50px 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <nav class="nav">
+      <div class="logo">
+        <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="46" fill="#4f8c6d" opacity="0.25"/>
+          <circle cx="50" cy="50" r="30" fill="none" stroke="#cfe3d8" stroke-width="3"/>
+          <circle cx="50" cy="50" r="11" fill="#cfe3d8"/>
+        </svg>
+        DRishti
+      </div>
+      <div class="nav-links">
+        <a href="#pipeline">Pipeline</a>
+        <a href="#modes">Modes</a>
+        <a href="#decisions">Design</a>
+        <a href="#stack">Stack</a>
+        <a href="#limits">Limitations</a>
+      </div>
+      <a class="btn btn-primary" href="https://github.com/Shaurya-web548/DRishti">View on GitHub</a>
+    </nav>
+
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Retinal screening · MATLAB + Flask</span>
+        <h1>Grade diabetic retinopathy from a single fundus photo.</h1>
+        <p class="lede">
+          One image goes in. An ICDR grade, a referral decision, an annotated lesion
+          overlay, a Grad-CAM attention map and a patient-readable PDF come out —
+          with the classical and neural paths cross-checking each other.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="https://github.com/Shaurya-web548/DRishti">Read the source</a>
+          <a class="btn btn-ghost" href="#pipeline">How it works</a>
+        </div>
+      </div>
+
+      <div class="retina-card">
+        <svg viewBox="0 0 320 320" role="img" aria-label="Stylised fundus image with detected optic disc, fovea, vessels and lesions">
+          <defs>
+            <radialGradient id="fundus" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#c85a2a"/>
+              <stop offset="55%" stop-color="#9e3f1c"/>
+              <stop offset="100%" stop-color="#5e2410"/>
+            </radialGradient>
+          </defs>
+          <rect width="320" height="320" fill="#0b1f17"/>
+          <circle cx="160" cy="160" r="140" fill="url(#fundus)"/>
+
+          <!-- vessels -->
+          <g stroke="#7d2a12" fill="none" stroke-linecap="round" opacity="0.85">
+            <path d="M105 128 C 140 118, 190 132, 240 108" stroke-width="5"/>
+            <path d="M105 128 C 145 140, 195 168, 246 190" stroke-width="5"/>
+            <path d="M104 148 C 130 172, 150 220, 165 268" stroke-width="4"/>
+            <path d="M104 112 C 126 84, 150 62, 176 44" stroke-width="4"/>
+            <path d="M150 124 C 172 112, 196 116, 214 100" stroke-width="2.5"/>
+            <path d="M160 152 C 184 166, 200 190, 208 214" stroke-width="2.5"/>
+            <path d="M126 166 C 132 196, 128 224, 118 250" stroke-width="2.5"/>
+            <path d="M132 100 C 148 82, 168 74, 186 66" stroke-width="2"/>
+          </g>
+
+          <!-- optic disc -->
+          <circle cx="104" cy="128" r="24" fill="#e8b072" opacity="0.92"/>
+          <circle cx="104" cy="128" r="24" fill="none" stroke="#ffd84d" stroke-width="2.5"/>
+          <!-- fovea -->
+          <circle cx="196" cy="166" r="22" fill="#5e2410" opacity="0.55"/>
+          <circle cx="196" cy="166" r="22" fill="none" stroke="#3fd0d8" stroke-width="2.5"/>
+
+          <!-- exudates -->
+          <g fill="#f2e6a0" stroke="#3ee07a" stroke-width="1.6">
+            <ellipse cx="224" cy="148" rx="7" ry="5"/>
+            <ellipse cx="238" cy="162" rx="5" ry="4"/>
+            <ellipse cx="214" cy="204" rx="6" ry="4.5"/>
+          </g>
+          <!-- haemorrhage -->
+          <g fill="#6e1410" stroke="#ff5ce0" stroke-width="1.6">
+            <ellipse cx="128" cy="212" rx="12" ry="9"/>
+            <ellipse cx="98" cy="186" rx="8" ry="7"/>
+          </g>
+          <!-- microaneurysms -->
+          <g fill="#8c1d10" stroke="#ff3b30" stroke-width="1.4">
+            <circle cx="170" cy="96" r="3.4"/>
+            <circle cx="196" cy="112" r="3"/>
+            <circle cx="150" cy="196" r="3.2"/>
+            <circle cx="182" cy="228" r="3"/>
+            <circle cx="234" cy="122" r="2.8"/>
+            <circle cx="118" cy="88" r="3"/>
+          </g>
+
+          <circle cx="160" cy="160" r="140" fill="none" stroke="#0b1f17" stroke-width="18"/>
+        </svg>
+        <div class="retina-legend">
+          <span><i class="dot" style="background:#ffd84d"></i>Optic disc</span>
+          <span><i class="dot" style="background:#3fd0d8"></i>Fovea</span>
+          <span><i class="dot" style="background:#ff3b30"></i>Microaneurysms</span>
+          <span><i class="dot" style="background:#3ee07a"></i>Exudates</span>
+          <span><i class="dot" style="background:#ff5ce0"></i>Haemorrhages</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="pipeline">
+  <div class="wrap">
+    <h2>The pipeline</h2>
+    <p class="section-lede">
+      Five stages. Each one can be run and inspected on its own in MATLAB — the web
+      layer is a wrapper, not the logic.
+    </p>
+
+    <div class="pipeline">
+      <div class="stage">
+        <div class="stage-num">1</div>
+        <div class="stage-body">
+          <h3>Quality gate</h3>
+          <p>
+            Hough-circle field-of-view detection, Laplacian-variance blur scoring and
+            histogram exposure analysis sort every image into <strong>pass</strong>,
+            <strong>enhanced</strong> (CLAHE + edge-preserving denoise) or
+            <strong>reject</strong>. A rejected image stops here — no grade is guessed
+            from a photo that can't support one.
+          </p>
+          <div class="files"><code>assessImageQuality.m</code></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num">2</div>
+        <div class="stage-body">
+          <h3>Segmentation</h3>
+          <p>
+            Optic disc and fovea localisation, multi-orientation matched-filter vessel
+            segmentation, top-hat microaneurysm detection, and background-subtraction
+            exudate and haemorrhage segmentation — plus an experimental
+            neovascularization proxy. All thresholds are fractions of the field-of-view
+            radius, so the same settings transfer across cameras and resolutions.
+          </p>
+          <div class="files"><code>segmentRetina.m</code><code>dlSegmentVessels.m</code></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num split">3</div>
+        <div class="stage-body">
+          <h3>Two independent graders, then consensus</h3>
+          <p>
+            One path applies the International Clinical DR scale directly, including the
+            4-2-1 rule for severe NPDR. The other fine-tunes an EfficientNet-B0 or
+            ResNet-50 backbone, calibrates its confidence with Platt scaling, and picks a
+            referral cut-off from the ROC curve. They only produce a grade when they
+            <em>agree</em>; disagreement is flagged for human review.
+          </p>
+          <div class="files">
+            <code>gradeByRules.m</code><code>trainDRClassifier.m</code><code>predictDRGrade.m</code><code>calibrateConfidence.m</code><code>tuneReferableThreshold.m</code><code>combineGrades.m</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num">4</div>
+        <div class="stage-body">
+          <h3>Explanation</h3>
+          <p>
+            A Grad-CAM map showing where the network actually looked, a colour-coded
+            lesion overlay with labelled leader lines, quadrant-wise lesion counts, and a
+            JSON + PNG export the web layer reads instead of parsing MATLAB structs.
+          </p>
+          <div class="files"><code>gradCAMHeatmap.m</code><code>drawLesionOverlay.m</code><code>explainGrading.m</code><code>compileReportData.m</code></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num">5</div>
+        <div class="stage-body">
+          <h3>Delivery</h3>
+          <p>
+            A Flask app holds a persistent MATLAB Engine session so scans don't pay the
+            30-second startup cost each time, and generates a styled PDF report with
+            plain-language prose an LLM writes — from a grade it is explicitly forbidden
+            to change.
+          </p>
+          <div class="files"><code>runDRPipelineProduction.m</code><code>app.py</code><code>matlab_bridge.py</code><code>report_generator.py</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="modes">
+  <div class="wrap">
+    <h2>Two runtime modes, selected automatically</h2>
+    <p class="section-lede">
+      The trained CNN is an enhancement, not a dependency. If the model file is missing,
+      unreadable or untrained, the pipeline degrades to the rule-based path and reports
+      which one it took — nothing crashes and no flag needs flipping.
+    </p>
+
+    <div class="modes">
+      <div class="mode full">
+        <span class="mode-tag">real_full</span>
+        <h3>A trained model loaded</h3>
+        <ul>
+          <li>CNN and rule grades combined through consensus</li>
+          <li>Grad-CAM attention map</li>
+          <li>Platt-calibrated confidence score</li>
+          <li>Colour-coded lesion overlay</li>
+          <li>Tuned referral threshold</li>
+        </ul>
+      </div>
+      <div class="mode">
+        <span class="mode-tag">real_no_cnn</span>
+        <h3>Model missing or untrained</h3>
+        <ul>
+          <li>Rule-based ICDR grade from lesion counts</li>
+          <li>Colour-coded lesion overlay</li>
+          <li>No Grad-CAM</li>
+          <li>No confidence score</li>
+          <li>Full PDF report still generates</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="decisions">
+  <div class="wrap">
+    <h2>Design decisions</h2>
+    <p class="section-lede">
+      The interesting parts of this project are the places where the obvious choice was
+      the wrong one.
+    </p>
+
+    <div class="decisions">
+      <div class="decision">
+        <h3>Classical segmentation over a learned one</h3>
+        <p>
+          Matched filters and top-hat transforms rather than a segmentation network.
+          Every decision is inspectable — orientation, scale, threshold — which matters
+          more than raw accuracy when a clinician asks <em>why</em> a pixel was called a
+          haemorrhage.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>Calibrated confidence, not raw softmax</h3>
+        <p>
+          Networks are systematically overconfident. Platt scaling fitted on the
+          validation split means a reported 80% actually corresponds to being right about
+          80% of the time — and expected calibration error is reported before and after.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>Tuned for sensitivity, not accuracy</h3>
+        <p>
+          A missed referable case costs far more than a false alarm. The operating point
+          is chosen for the best specificity <em>among</em> cut-offs that reach 90%
+          sensitivity, rather than whatever maximises overall accuracy.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>Disagreement is an output</h3>
+        <p>
+          When the CNN and the clinical rules diverge, the result isn't a tiebreak — it's
+          a <code>review</code> flag with no grade, marked referable if either path says
+          so. The safe default for screening.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>The LLM never grades</h3>
+        <p>
+          Gemini writes the patient-facing paragraphs and nothing else. The grade is a
+          fixed input it is forbidden to re-derive or contradict, and if the API is down
+          the report still generates from canned neutral prose.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>Weak parts are labelled weak</h3>
+        <p>
+          The neovascularization detector is documented in its own source as an
+          experimental proxy that will fire on dense normal arcades. Naming a limitation
+          is more useful than hiding it behind a confident number.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="stack">
+  <div class="wrap">
+    <h2>Stack</h2>
+    <p class="section-lede">Analysis in MATLAB, delivery in Python, bridged by the MATLAB Engine.</p>
+
+    <div class="stack">
+      <div class="stack-card">
+        <h3>Image analysis</h3>
+        <ul>
+          <li>MATLAB R2021a+</li>
+          <li>Image Processing Toolbox</li>
+          <li>Deep Learning Toolbox</li>
+          <li>Statistics &amp; ML Toolbox</li>
+          <li>Computer Vision Toolbox (optional)</li>
+        </ul>
+      </div>
+      <div class="stack-card">
+        <h3>Models</h3>
+        <ul>
+          <li>EfficientNet-B0 / ResNet-50 transfer learning</li>
+          <li>Class-balanced sampling, augmentation</li>
+          <li>Quadratic weighted kappa evaluation</li>
+          <li>Grad-CAM attribution</li>
+          <li>Optional U-Net vessel path</li>
+        </ul>
+      </div>
+      <div class="stack-card">
+        <h3>Application</h3>
+        <ul>
+          <li>Flask + MATLAB Engine for Python</li>
+          <li>fpdf2 report layout</li>
+          <li>Gemini for patient-facing prose</li>
+          <li>JSON hand-off between layers</li>
+          <li>APTOS 2019 / IDRiD / Messidor-2 loaders</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="wrap">
+    <div class="caveats">
+      <h2>What this doesn't do</h2>
+      <ul>
+        <li>Neovascularization detection is a heuristic proxy, not a validated detector — it also fires on dense normal arcades and poor crops.</li>
+        <li>Haemorrhages are localised but not sub-typed into dot, blot or flame.</li>
+        <li>Venous beading and IRMA are accepted as inputs to the rule grader but aren't detected automatically, so two of the three severe-NPDR triggers need external input.</li>
+        <li>The shipped checkpoint is a short demo fine-tune on a subsampled dataset. It makes the <code>real_full</code> path runnable; it is not accurate enough to screen anyone.</li>
+        <li>The MATLAB Engine is a locked singleton, so scans are serialised — fine for a kiosk, not for concurrent load.</li>
+      </ul>
+
+      <div class="disclaimer">
+        <strong>Not a medical device.</strong> This is a research and educational
+        project. Its output is a screening signal, not a diagnosis, and it has not been
+        clinically validated. Always consult a qualified eye care professional.
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; width:100%;">
+    <span>DRishti — built by <a href="https://github.com/Shaurya-web548">Shaurya Agarwal</a>. MIT licensed.</span>
+    <span><a href="https://github.com/Shaurya-web548/DRishti">Source on GitHub</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

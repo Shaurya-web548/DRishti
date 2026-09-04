@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Flask runtime output
+app/python/results/
+*.pdf
+
+# MATLAB
+*.asv
+*.mex*
+slprj/
+report_out/
+drishti_reports/
+
+# Training data (never commit patient/fundus datasets)
+data/
+train_images/
+*.csv
+
+# Secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db

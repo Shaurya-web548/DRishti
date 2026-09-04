@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRishti - Diabetic Retinopathy Screening</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="hero">
+  <div class="grid-overlay"></div>
+
+  <nav class="navbar">
+    <div class="logo"><span class="logo-mark">D</span>rishti</div>
+    <div class="nav-links">
+      <a href="#scan">AI Scan</a>
+      <a href="#how">How It Works</a>
+      <a href="#about">About</a>
+    </div>
+    <button class="nav-cta" id="navStartBtn">Start Scan</button>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-text">
+      <span class="hero-eyebrow">AI EYE HEALTH SCREENING</span>
+      <h1>Screen for Diabetic Retinopathy in Seconds</h1>
+      <p>Upload a retinal fundus photo. DRishti grades it against the International
+         Clinical DR scale and tells you if a specialist visit is needed - built for
+         clinics where an ophthalmologist isn't always around the corner.</p>
+      <div class="hero-buttons">
+        <button class="btn-primary" id="heroStartBtn">Start Eye Scan</button>
+        <button class="btn-secondary" id="howItWorksBtn">How It Works</button>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="eye-frame">
+        <div class="eye-placeholder">
+          <svg viewBox="0 0 200 200" width="140" height="140">
+            <circle cx="100" cy="100" r="60" fill="none" stroke="#cfe3d8" stroke-width="2"/>
+            <circle cx="100" cy="100" r="30" fill="#cfe3d8" opacity="0.5"/>
+            <circle cx="100" cy="100" r="12" fill="#0f2a1f"/>
+          </svg>
+          <p>Drop in your own fundus photo asset here</p>
+        </div>
+      </div>
+      <div class="floating-card">
+        <span class="fc-label">Last scan</span>
+        <span class="fc-date">04 Sep 2026</span>
+        <div class="fc-bar"><div class="fc-fill" style="width: 20%"></div></div>
+        <span class="fc-status">Grade 0 - No DR</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main id="scan" class="scan-section">
+  <div class="scan-card">
+    <h2>Run a Screening</h2>
+    <p class="muted">Upload a clear, well-lit fundus photo (PNG or JPG). DRishti will
+       automatically use the trained AI model with GradCAM if it's available, or fall
+       back to rule-based ICDR grading if not - either way you get a graded result.</p>
+
+    <form id="scanForm">
+      <label class="upload-drop" id="uploadDrop">
+        <input type="file" id="imageInput" accept="image/png, image/jpeg" hidden required>
+        <span id="uploadLabel">Click to choose a fundus image, or drag one here</span>
+      </label>
+      <button type="submit" class="btn-primary" id="submitBtn">Analyze Image</button>
+    </form>
+
+    <div id="loadingState" class="loading-state hidden">
+      <div class="spinner"></div>
+      <p>Running Modules 1-4 - quality check, segmentation, grading...</p>
+    </div>
+
+    <div id="errorState" class="error-box hidden"></div>
+
+    <div id="resultState" class="result-state hidden">
+      <div class="result-header">
+        <span id="modeBadge" class="mode-badge"></span>
+        <h3 id="gradeHeadline"></h3>
+        <p id="confidenceLine" class="muted"></p>
+      </div>
+
+      <div class="result-images">
+        <figure>
+          <img id="imgOriginal" alt="Original scan">
+          <figcaption>Original scan</figcaption>
+        </figure>
+        <figure id="figOverlay" class="hidden">
+          <img id="imgOverlay" alt="Lesion overlay">
+          <figcaption>Lesion overlay</figcaption>
+        </figure>
+        <figure id="figGradcam" class="hidden">
+          <img id="imgGradcam" alt="GradCAM heatmap">
+          <figcaption>GradCAM (AI focus)</figcaption>
+        </figure>
+      </div>
+
+      <div class="report-form">
+        <h4>Generate PDF Report</h4>
+        <div class="report-fields">
+          <input type="text" id="patientName" placeholder="Patient name">
+          <input type="number" id="patientAge" placeholder="Age">
+          <input type="text" id="patientLocation" placeholder="Clinic / location">
+        </div>
+        <button class="btn-primary" id="downloadReportBtn">Download PDF Report</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; 2026 DRishti (SIH26038). Screening tool only - not a substitute for a
+     qualified ophthalmologist's diagnosis.</p>
+</footer>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
