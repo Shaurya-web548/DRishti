@@ -1,0 +1,183 @@
+==========================================================
+ DRishti district capacity model
+ 100000 patients/yr, 8 sites, 2 worker(s), 2.0 grader FTE
+==========================================================
+
+(simulated 97811 patients in 0.4 s of wall clock)
+
+---------------- DEMAND ----------------------------------
+  annual target             100000
+  patients presented        97811
+  unmet (no session slot)   2090  (2.1%)
+  patients screened         96879
+  ungradable (both eyes)    932  (0.95%)
+  single-eye-only patients  3.66%
+  images uploaded           190180  (1.96 per screened patient)
+
+---------------- BANDWIDTH -------------------------------
+  total uploaded            650.0 GB/yr
+  per site per day          0.33 GB
+  transfer time per image   7.0 s
+  link utilisation          3.1% of session hours (0.8% of 24h)
+  upload queue wait         mean 0.06 min, p95 0.12 min
+
+---------------- COMPUTE ---------------------------------
+  workers                   2
+  mean service time         11.10 s/image
+  utilisation               4.9% of 24h (19.5% of session hours)
+  processing queue wait     mean 0.02 min, p95 0.11 min, max 0.7 min
+
+---------------- ACQUISITION -----------------------------
+  patients per site per day 48.9
+  technician time/patient   4.51 min
+  technician utilisation    61.3% of session
+
+---------------- HUMAN REVIEW ----------------------------
+  cases to a human          28806  (29.7% of screened)
+    of which disagreements  21260
+    of which QA sample      7546
+  grader utilisation        26.9%
+  review queue wait         mean 0.01 h, p95 0.04 h
+
+---------------- REFERRAL --------------------------------
+  referable patients        6742  (7.0%)
+  specialist slots/day      36  (demand 27.0/day)
+  slot utilisation          74.9%
+  appointment wait          mean 0.00 d, p95 0.00 d, peak backlog 5
+
+---------------- TURNAROUND ------------------------------
+  automated result only     median 0.4 min, p95 0.6 min
+  result before patient leaves (<=30 min)  100.0%
+  full report (incl. human) median 0.01 h, p90 0.05 h, p95 0.08 h, max 0.5 h
+  within 24 h SLA            100.0%
+
+---------------- RESOURCE UTILISATION (ranked) -----------
+  Ophthalmologist (slots)        74.9%  #####################################
+  Technician (session hours)     61.3%  ###############################
+  Grader (shift hours)           26.9%  #############
+  Compute worker (24h)            4.9%  ##
+  Uplink (session hours)          3.1%  ##
+
+---------------- SWEEP: compute workers ------------------
+  workers  util %       meanWait min   p95Wait min    sameSess %  
+  1        9.8          0.15           0.61           100.0       
+  2        4.9          0.02           0.11           100.0       
+  3        3.3          0.00           0.00           100.0       
+  4        2.4          0.00           0.00           100.0       
+  6        1.6          0.00           0.00           100.0       
+
+---------------- SWEEP: uplink bandwidth -----------------
+  Mbps       sessUtil %     meanWait min   p95Wait min    sameSess %  
+  0.25       49.3           2.61           8.24           100.0       
+  0.50       24.7           0.74           2.38           100.0       
+  1.00       12.3           0.29           0.80           100.0       
+  2.00       6.2            0.13           0.23           100.0       
+  4.00       3.1            0.06           0.12           100.0       
+  8.00       1.5            0.03           0.06           100.0       
+
+---------------- SWEEP: screening sites ------------------
+  sites    pat/site/d   techUtil %     screened       unmet %       
+  4        76.7         96.7           75939          23.1          
+  5        71.2         89.6           88173          11.1          
+  6        63.2         79.4           93826          5.5           
+  8        48.9         61.3           96879          2.1           
+  10       39.4         49.6           97450          1.3           
+  12       33.0         41.6           98199          0.9           
+
+---------------- SWEEP: grader FTE -----------------------
+  FTE      util %       meanWait h     p95Wait h      SLA24 %     
+  1        53.9         0.09           0.33           100.0       
+  2        26.9         0.01           0.04           100.0       
+  3        18.0         0.00           0.00           100.0       
+  4        13.5         0.00           0.00           100.0       
+
+---------------- SWEEP: ophthalmologist FTE --------------
+  FTE      util %       meanWait d     p95Wait d      maxBacklog  
+  0.5      149.8        63.98          119.00         2242        
+  1.0      74.9         0.00           0.00           5           
+  1.5      49.9         0.00           0.00           0           
+  2.0      37.5         0.00           0.00           0           
+
+---------------- SCALING: annual volume ------------------
+  patients  techUtil%  cpuUtil%  gradUtil%  ophUtil%  unmet%   ophWaitP95d
+  50000     31.1       2.5       13.6       37.6      0.6      0.0        
+  100000    61.3       4.9       26.9       74.9      2.1      0.0        
+  150000    86.4       6.9       37.7       108.1     8.4      19.0       
+  200000    96.8       7.7       42.3       117.6     23.2     42.0       
+  300000    99.8       7.9       43.5       121.9     47.4     52.0       
+
+---------------- SENSITIVITY: per-image compute time ------
+  -- 1 worker(s) --
+  sec/image    util24h %    sessionUtil %  p95Wait min    sameSess %  
+  11           9.8          39.1           0.61           100.0       
+  20           17.7         70.8           3.02           100.0       
+  24           21.2         84.9           7.46           100.0       
+  40           35.3         141.2          153.27         22.1        
+  60           52.9         211.7          391.42         8.2         
+  90           79.3         317.4          752.82         4.1         
+  120          105.8        423.0          20622.12       0.0         
+  -- 2 worker(s) --
+  sec/image    util24h %    sessionUtil %  p95Wait min    sameSess %  
+  11           4.9          19.5           0.11           100.0       
+  20           8.9          35.4           0.44           100.0       
+  24           10.6         42.4           0.67           100.0       
+  40           17.7         70.6           2.87           100.0       
+  60           26.5         105.8          43.03          81.4        
+  90           39.7         158.7          211.31         15.5        
+  120          52.9         211.5          390.38         8.1         
+
+---------------- MINIMUM FEASIBLE CONFIGURATION ----------
+  screening sites/day       10
+  MATLAB compute workers    1
+  grader FTE                1
+  ophthalmologist FTE       1
+
+  Verifying the combined configuration...
+
+---------------- DEMAND ----------------------------------
+  annual target             100000
+  patients presented        98395
+  unmet (no session slot)   1323  (1.3%)
+  patients screened         97450
+  ungradable (both eyes)    945  (0.96%)
+  single-eye-only patients  3.66%
+  images uploaded           191299  (1.96 per screened patient)
+
+---------------- BANDWIDTH -------------------------------
+  total uploaded            653.9 GB/yr
+  per site per day          0.26 GB
+  transfer time per image   7.0 s
+  link utilisation          2.5% of session hours (0.6% of 24h)
+  upload queue wait         mean 0.06 min, p95 0.12 min
+
+---------------- COMPUTE ---------------------------------
+  workers                   1
+  mean service time         11.10 s/image
+  utilisation               9.8% of 24h (39.3% of session hours)
+  processing queue wait     mean 0.16 min, p95 0.62 min, max 2.7 min
+
+---------------- ACQUISITION -----------------------------
+  patients per site per day 39.4
+  technician time/patient   4.54 min
+  technician utilisation    49.6% of session
+
+---------------- HUMAN REVIEW ----------------------------
+  cases to a human          28935  (29.7% of screened)
+    of which disagreements  21327
+    of which QA sample      7608
+  grader utilisation        54.2%
+  review queue wait         mean 0.10 h, p95 0.37 h
+
+---------------- REFERRAL --------------------------------
+  referable patients        6800  (7.0%)
+  specialist slots/day      36  (demand 27.2/day)
+  slot utilisation          75.6%
+  appointment wait          mean 0.00 d, p95 0.00 d, peak backlog 3
+
+---------------- TURNAROUND ------------------------------
+  automated result only     median 0.6 min, p95 1.1 min
+  result before patient leaves (<=30 min)  100.0%
+  full report (incl. human) median 0.01 h, p90 0.15 h, p95 0.25 h, max 1.3 h
+  within 24 h SLA            100.0%
+
+Wrote capacity_results.json

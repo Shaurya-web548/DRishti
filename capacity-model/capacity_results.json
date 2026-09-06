@@ -1,0 +1,734 @@
+{
+  "baseline": {
+    "params": {
+      "annualPatients": 100000,
+      "workingDays": 250,
+      "sites": 8,
+      "sessionHours": 6,
+      "sessionStartH": 9,
+      "captureMin": 4,
+      "retryMin": 1.5,
+      "maxRetries": 2,
+      "pDifficultPatient": 0.08,
+      "pRejectNormal": 0.06,
+      "pRejectDifficult": 0.7,
+      "pEnhanced": 0.25,
+      "imageMB": 3.5,
+      "uplinkMbps": 4,
+      "workers": 2,
+      "procMeanSec": 11,
+      "procCV": 0.35,
+      "enhanceExtraSec": 0.4,
+      "pDisagree": 0.22,
+      "qaSampleRate": 0.1,
+      "reviewMin": 2.5,
+      "qaMin": 1.5,
+      "graderFTE": 2,
+      "graderHoursPerDay": 8,
+      "graderStartH": 9,
+      "pReferable": 0.07,
+      "ophthFTE": 1,
+      "ophthHoursPerDay": 6,
+      "ophthMinPerCase": 10,
+      "slaHours": 24,
+      "sameSessionMin": 30,
+      "simStepH": 0.25,
+      "seed": 42
+    },
+    "demand": {
+      "targetPatients": 100000,
+      "patientsPresented": 97811,
+      "turnedAway": 2090,
+      "unmetDemandPct": 2.0920711504389344,
+      "patientsScreened": 96879,
+      "patientsUngradable": 932,
+      "ungradableRatePct": 0.95285806299904918,
+      "imagesUploaded": 190180,
+      "imagesPerPatient": 1.9630673314134126,
+      "singleEyeOnlyPct": 3.6580752676079378
+    },
+    "bandwidth": {
+      "gbPerYear": 650.029296875,
+      "gbPerSitePerDay": 0.3250146484375,
+      "uploadSecPerImg": 7,
+      "linkUtilPct": 0.7704050925925926,
+      "sessionLinkUtilPct": 3.0816203703703704,
+      "meanWaitMin": 0.06067697167804359,
+      "p95WaitMin": 0.11666666666872819
+    },
+    "compute": {
+      "workers": 2,
+      "meanServiceSec": 11.101722110976571,
+      "utilPct": 4.8873275719109355,
+      "sessionUtilPct": 19.549310287643742,
+      "meanWaitMin": 0.015182268863599557,
+      "p95WaitMin": 0.10994360047834556,
+      "maxWaitMin": 0.69016116782222525
+    },
+    "technician": {
+      "utilPct": 61.265475233509115,
+      "minPerPatient": 4.5098344938837718,
+      "patientsPerSiteDay": 48.9055
+    },
+    "review": {
+      "casesToHuman": 28806,
+      "disagreementCases": 21260,
+      "qaCases": 7546,
+      "humanTouchRatePct": 29.733998080079274,
+      "graderFTE": 2,
+      "utilPct": 26.931596148169294,
+      "meanWaitH": 0.0055697484663251055,
+      "p95WaitH": 0.038166213634553969
+    },
+    "referral": {
+      "referableCases": 6742,
+      "referableRatePct": 6.9591965234983846,
+      "slotsPerDay": 36,
+      "demandPerDay": 26.968,
+      "utilPct": 74.911111111111111,
+      "meanWaitDays": 0.0034114506081281519,
+      "p95WaitDays": 0,
+      "maxBacklog": 5
+    },
+    "turnaround": {
+      "medianH": 0.007865737015151808,
+      "p90H": 0.054216733839712095,
+      "p95H": 0.08374313075087228,
+      "maxH": 0.49045232552953166,
+      "autoMedianMin": 0.42706114512384374,
+      "autoP95Min": 0.61370743966517682,
+      "sameSessionPct": 100,
+      "withinSlaPct": 100
+    }
+  },
+  "sweepWorkers": [
+    {
+      "value": 1,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 9.774655143821871,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.607302952616919,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.0372196669211462,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 2,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 3,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 3.2582183812739571,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038419856775618655,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 4,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 2.4436637859554677,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038466538031343589,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 6,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 1.6291091906369786,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.0385295316268639,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    }
+  ],
+  "sweepBandwidth": [
+    {
+      "value": 0.25,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 49.305925925925926,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0,
+        "linkWaitP95Min": 8.2420487861530809,
+        "graderWaitP95H": 0.033826628686028926,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 99.998967784555987,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 0.5,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 24.652962962962963,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0,
+        "linkWaitP95Min": 2.3845566726573142,
+        "graderWaitP95H": 0.036534726388481431,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 1,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 12.326481481481482,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0,
+        "linkWaitP95Min": 0.80130724827407263,
+        "graderWaitP95H": 0.037512533787491975,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 2,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 6.1632407407407408,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.045424294434724205,
+        "linkWaitP95Min": 0.23333333333745637,
+        "graderWaitP95H": 0.037820055936435892,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 4,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 8,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 1.5408101851851852,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.14550124998231681,
+        "linkWaitP95Min": 0.058333333334364093,
+        "graderWaitP95H": 0.037980385822521612,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    }
+  ],
+  "sweepSites": [
+    {
+      "value": 4,
+      "metrics": {
+        "techUtilPct": 96.732002614712755,
+        "linkUtilPct": 4.8294490740740743,
+        "cpuUtilPct": 3.8316605260131853,
+        "graderUtilPct": 21.22970242295397,
+        "ophthUtilPct": 58.444444444444443,
+        "cpuWaitP95Min": 0.07539067538164089,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.023948317370712856,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 76680
+      }
+    },
+    {
+      "value": 5,
+      "metrics": {
+        "techUtilPct": 89.630247373811343,
+        "linkUtilPct": 4.4879074074074072,
+        "cpuUtilPct": 4.4513528579289439,
+        "graderUtilPct": 24.327207506280939,
+        "ophthUtilPct": 69.044444444444451,
+        "cpuWaitP95Min": 0.09544072136395694,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.033455855117153967,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 89029
+      }
+    },
+    {
+      "value": 6,
+      "metrics": {
+        "techUtilPct": 79.407885558860016,
+        "linkUtilPct": 3.9813796296296298,
+        "cpuUtilPct": 4.7388634376354339,
+        "graderUtilPct": 26.223329581261972,
+        "ophthUtilPct": 73.755555555555546,
+        "cpuWaitP95Min": 0.10340640391405032,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.03445772464692709,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 94746
+      }
+    },
+    {
+      "value": 8,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 10,
+      "metrics": {
+        "techUtilPct": 49.643674669479111,
+        "linkUtilPct": 2.4798018518518523,
+        "cpuUtilPct": 4.9139570873348175,
+        "graderUtilPct": 27.085438440870071,
+        "ophthUtilPct": 75.555555555555557,
+        "cpuWaitP95Min": 0.11046848177193178,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.040179643543120827,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 98395
+      }
+    },
+    {
+      "value": 12,
+      "metrics": {
+        "techUtilPct": 41.6241253332454,
+        "linkUtilPct": 2.0834614197530859,
+        "cpuUtilPct": 4.9542030261119292,
+        "graderUtilPct": 27.369970293947155,
+        "ophthUtilPct": 76.088888888888889,
+        "cpuWaitP95Min": 0.11282282304819093,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.040291895194468241,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 99147
+      }
+    }
+  ],
+  "sweepGraders": [
+    {
+      "value": 1,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 53.863192296338589,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.32585932727170075,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 2,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 3,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 17.954397432112863,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 4,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 13.465798074084647,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    }
+  ],
+  "sweepOphth": [
+    {
+      "value": 0.5,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 149.82222222222222,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 119,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 1,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 1.5,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 49.940740740740743,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 2,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 37.455555555555556,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    }
+  ],
+  "sweepVolume": [
+    {
+      "value": 50000,
+      "metrics": {
+        "techUtilPct": 31.110281555961766,
+        "linkUtilPct": 1.561875,
+        "cpuUtilPct": 2.4772956729667612,
+        "graderUtilPct": 13.562568097936252,
+        "ophthUtilPct": 37.644444444444446,
+        "cpuWaitP95Min": 0.049558489202581942,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.0024373943060140846,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 49587
+      }
+    },
+    {
+      "value": 100000,
+      "metrics": {
+        "techUtilPct": 61.265475233509115,
+        "linkUtilPct": 3.0816203703703704,
+        "cpuUtilPct": 4.8873275719109355,
+        "graderUtilPct": 26.931596148169294,
+        "ophthUtilPct": 74.911111111111111,
+        "cpuWaitP95Min": 0.10994360047834556,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.038166213634553969,
+        "ophthWaitP95D": 0,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 97811
+      }
+    },
+    {
+      "value": 150000,
+      "metrics": {
+        "techUtilPct": 86.433143479496721,
+        "linkUtilPct": 4.334539351851852,
+        "cpuUtilPct": 6.8693917284559429,
+        "graderUtilPct": 37.735465657740164,
+        "ophthUtilPct": 108.11111111111111,
+        "cpuWaitP95Min": 0.15333286782333744,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.071621927813885128,
+        "ophthWaitP95D": 19,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 137509
+      }
+    },
+    {
+      "value": 200000,
+      "metrics": {
+        "techUtilPct": 96.811606557592228,
+        "linkUtilPct": 4.829756944444445,
+        "cpuUtilPct": 7.6536023971518405,
+        "graderUtilPct": 42.330894752189757,
+        "ophthUtilPct": 117.56666666666666,
+        "cpuWaitP95Min": 0.17390319972764687,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.089143610757230332,
+        "ophthWaitP95D": 42,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 153309
+      }
+    },
+    {
+      "value": 300000,
+      "metrics": {
+        "techUtilPct": 99.81454828627308,
+        "linkUtilPct": 4.9702268518518524,
+        "cpuUtilPct": 7.8744705955682459,
+        "graderUtilPct": 43.466203658106295,
+        "ophthUtilPct": 121.85555555555555,
+        "cpuWaitP95Min": 0.17967623024378548,
+        "linkWaitP95Min": 0.11666666666872819,
+        "graderWaitP95H": 0.097312173306534008,
+        "ophthWaitP95D": 52,
+        "sameSessionPct": 100,
+        "slaPct": 100,
+        "patientsPresented": 157751
+      }
+    }
+  ],
+  "minimumConfig": {
+    "sites": 10,
+    "workers": 1,
+    "graderFTE": 1,
+    "ophthFTE": 1
+  },
+  "verified": {
+    "params": {
+      "annualPatients": 100000,
+      "workingDays": 250,
+      "sites": 10,
+      "sessionHours": 6,
+      "sessionStartH": 9,
+      "captureMin": 4,
+      "retryMin": 1.5,
+      "maxRetries": 2,
+      "pDifficultPatient": 0.08,
+      "pRejectNormal": 0.06,
+      "pRejectDifficult": 0.7,
+      "pEnhanced": 0.25,
+      "imageMB": 3.5,
+      "uplinkMbps": 4,
+      "workers": 1,
+      "procMeanSec": 11,
+      "procCV": 0.35,
+      "enhanceExtraSec": 0.4,
+      "pDisagree": 0.22,
+      "qaSampleRate": 0.1,
+      "reviewMin": 2.5,
+      "qaMin": 1.5,
+      "graderFTE": 1,
+      "graderHoursPerDay": 8,
+      "graderStartH": 9,
+      "pReferable": 0.07,
+      "ophthFTE": 1,
+      "ophthHoursPerDay": 6,
+      "ophthMinPerCase": 10,
+      "slaHours": 24,
+      "sameSessionMin": 30,
+      "simStepH": 0.25,
+      "seed": 42
+    },
+    "demand": {
+      "targetPatients": 100000,
+      "patientsPresented": 98395,
+      "turnedAway": 1323,
+      "unmetDemandPct": 1.326741410778395,
+      "patientsScreened": 97450,
+      "patientsUngradable": 945,
+      "ungradableRatePct": 0.96041465521622038,
+      "imagesUploaded": 191299,
+      "imagesPerPatient": 1.9630477167778349,
+      "singleEyeOnlyPct": 3.6597388078662534
+    },
+    "bandwidth": {
+      "gbPerYear": 653.85400390625,
+      "gbPerSitePerDay": 0.2615416015625,
+      "uploadSecPerImg": 7,
+      "linkUtilPct": 0.61995046296296308,
+      "sessionLinkUtilPct": 2.4798018518518523,
+      "meanWaitMin": 0.05993307151057186,
+      "p95WaitMin": 0.11666666666872819
+    },
+    "compute": {
+      "workers": 1,
+      "meanServiceSec": 11.096918759265032,
+      "utilPct": 9.827914174669635,
+      "sessionUtilPct": 39.31165669867854,
+      "meanWaitMin": 0.15520851457782267,
+      "p95WaitMin": 0.61535412605826423,
+      "maxWaitMin": 2.6760710378948716
+    },
+    "technician": {
+      "utilPct": 49.643674669479111,
+      "minPerPatient": 4.5408107325099039,
+      "patientsPerSiteDay": 39.358
+    },
+    "review": {
+      "casesToHuman": 28935,
+      "disagreementCases": 21327,
+      "qaCases": 7608,
+      "humanTouchRatePct": 29.692149820420727,
+      "graderFTE": 1,
+      "utilPct": 54.170876881740142,
+      "meanWaitH": 0.097456760208915472,
+      "p95WaitH": 0.37399670676104479
+    },
+    "referral": {
+      "referableCases": 6800,
+      "referableRatePct": 6.9779374037968189,
+      "slotsPerDay": 36,
+      "demandPerDay": 27.2,
+      "utilPct": 75.555555555555557,
+      "meanWaitDays": 0.0033823529411764705,
+      "p95WaitDays": 0,
+      "maxBacklog": 3
+    },
+    "turnaround": {
+      "medianH": 0.011337323650593589,
+      "p90H": 0.15457080783155563,
+      "p95H": 0.24998897296343334,
+      "maxH": 1.3104235016544408,
+      "autoMedianMin": 0.55053267059406608,
+      "autoP95Min": 1.1204935594478231,
+      "sameSessionPct": 100,
+      "withinSlaPct": 100
+    }
+  }
+}
