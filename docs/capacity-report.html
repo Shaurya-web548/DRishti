@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>📊</text></svg>">
+<title>DRishti Capacity Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:    #f2f5f3;
+    --surface:  #ffffff;
+    --sunken:   #e8ede9;
+    --ink:      #16211c;
+    --ink-soft: #4a5a51;
+    --ink-mute: #6d7d74;
+    --rule:     #d3ddd6;
+    --rule-firm:#b9c7be;
+    --accent:   #2f6b4f;
+    --accent-soft: #dfeae2;
+    --ok:       #3d8b5f;
+    --warn:     #b5811f;
+    --crit:     #b03a2e;
+    --crit-soft:#f2ddd9;
+
+    --display: "Zilla Slab", Georgia, serif;
+    --body: "Source Sans 3", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --wide: 1120px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:    #0e1613;
+      --surface:  #16211c;
+      --sunken:   #1d2a24;
+      --ink:      #e4ebe6;
+      --ink-soft: #b0bfb6;
+      --ink-mute: #8a9a91;
+      --rule:     #2a3831;
+      --rule-firm:#3b4d43;
+      --accent:   #6cbf90;
+      --accent-soft: #1e3228;
+      --ok:       #6cbf90;
+      --warn:     #d8a542;
+      --crit:     #e0705f;
+      --crit-soft:#33201d;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:    #0e1613;
+    --surface:  #16211c;
+    --sunken:   #1d2a24;
+    --ink:      #e4ebe6;
+    --ink-soft: #b0bfb6;
+    --ink-mute: #8a9a91;
+    --rule:     #2a3831;
+    --rule-firm:#3b4d43;
+    --accent:   #6cbf90;
+    --accent-soft: #1e3228;
+    --ok:       #6cbf90;
+    --warn:     #d8a542;
+    --crit:     #e0705f;
+    --crit-soft:#33201d;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell { max-width: var(--wide); margin: 0 auto; padding: 0 32px 96px; }
+  .col { max-width: var(--measure); }
+
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+
+  /* ---------------- masthead ---------------- */
+  header.masthead {
+    padding: 64px 0 34px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  h1 { font-size: clamp(2.2rem, 5.2vw, 3.4rem); line-height: 1.04; font-weight: 700; letter-spacing: -0.015em; }
+  .standfirst {
+    margin-top: 18px;
+    max-width: var(--measure);
+    font-size: 1.16rem;
+    color: var(--ink-soft);
+  }
+
+  /* config strip */
+  .config {
+    margin-top: 36px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .config div { background: var(--paper); padding: 12px 14px; }
+  .config dt {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .config dd {
+    margin: 4px 0 0;
+    font-family: var(--mono);
+    font-size: 1.02rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------------- provenance ---------------- */
+  .provenance {
+    margin: 34px 0 0;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 18px 22px;
+    max-width: var(--measure);
+  }
+  .provenance p { margin: 0 0 10px; font-size: 0.96rem; }
+  .provenance p:last-child { margin-bottom: 0; }
+  .provenance strong { font-weight: 600; }
+
+  /* ---------------- sections ---------------- */
+  section { padding-top: 62px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 10px;
+  }
+  h2 { font-size: 1.72rem; font-weight: 600; letter-spacing: -0.01em; }
+  h3 { font-size: 1.12rem; font-weight: 600; margin-top: 34px; }
+  p { margin: 14px 0; max-width: var(--measure); }
+  .lede { font-size: 1.05rem; color: var(--ink-soft); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--sunken);
+    padding: 0.1em 0.36em;
+    border-radius: 3px;
+  }
+
+  /* ---------------- pipeline ---------------- */
+  .pipeline {
+    margin-top: 26px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+    gap: 14px;
+  }
+  .stage {
+    border-top: 2px solid var(--rule-firm);
+    padding-top: 12px;
+  }
+  .stage .n {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+  }
+  .stage h4 {
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 4px 0 6px;
+  }
+  .stage p { font-size: 0.86rem; color: var(--ink-mute); margin: 0 0 10px; max-width: none; }
+  .stage .util {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stage .util span { font-size: 0.7rem; color: var(--ink-mute); font-weight: 400; }
+
+  /* ---------------- utilisation bars ---------------- */
+  .bars { margin-top: 26px; display: flex; flex-direction: column; gap: 2px; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 190px 1fr 62px;
+    align-items: center;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .bar-row .name { font-size: 0.94rem; }
+  .bar-row .name em { font-style: normal; color: var(--ink-mute); font-size: 0.82rem; display: block; }
+  .track { background: var(--sunken); height: 20px; position: relative; }
+  .fill { height: 100%; }
+  .fill.ok { background: var(--ok); }
+  .fill.warn { background: var(--warn); }
+  .fill.crit { background: var(--crit); }
+  .track::after {
+    content: "";
+    position: absolute;
+    left: 85%; top: -3px; bottom: -3px;
+    width: 1px;
+    background: var(--ink-mute);
+  }
+  .bar-row .val {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .bars-note { font-size: 0.83rem; color: var(--ink-mute); margin-top: 12px; }
+
+  /* ---------------- tables ---------------- */
+  .table-wrap { overflow-x: auto; margin: 22px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 0.92rem; }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding-bottom: 10px;
+  }
+  th, td { padding: 8px 14px 8px 0; text-align: left; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+    border-bottom: 1px solid var(--rule-firm);
+  }
+  tbody tr { border-bottom: 1px solid var(--rule); }
+  td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; padding-right: 20px; }
+  tr.flag td { background: var(--crit-soft); }
+  td.crit { color: var(--crit); font-weight: 600; }
+  td.ok { color: var(--ok); font-weight: 600; }
+  tr.pick td { background: var(--accent-soft); font-weight: 600; }
+
+  /* ---------------- chart ---------------- */
+  figure { margin: 26px 0 0; }
+  figcaption { font-size: 0.85rem; color: var(--ink-mute); margin-top: 12px; max-width: var(--measure); }
+  .chart { width: 100%; height: auto; display: block; }
+
+  /* ---------------- findings ---------------- */
+  .finding { padding-top: 44px; }
+  .finding > h3 {
+    font-size: 1.34rem;
+    margin: 0 0 6px;
+    padding-left: 16px;
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ---------------- config compare ---------------- */
+  .verdict {
+    margin-top: 30px;
+    border: 1px solid var(--rule-firm);
+    background: var(--surface);
+    padding: 24px 26px;
+  }
+  .verdict h3 { margin-top: 0; }
+
+  ul { max-width: var(--measure); padding-left: 20px; }
+  li { margin-bottom: 9px; }
+
+  footer {
+    margin-top: 76px;
+    padding-top: 26px;
+    border-top: 2px solid var(--ink);
+    font-size: 0.88rem;
+    color: var(--ink-mute);
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 700px) {
+    body { font-size: 16px; }
+    .shell { padding: 0 20px 64px; }
+    .bar-row { grid-template-columns: 128px 1fr 54px; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header class="masthead">
+  <div class="kicker">Resource model · District DR screening</div>
+  <h1>Where a 100,000-patient screening programme actually runs out</h1>
+  <p class="standfirst">
+    A discrete-event simulation of the telemedicine pipeline around DRishti —
+    acquisition, uplink, GPU-free compute, grader shifts and specialist slots.
+    The AI is not the constraint. The ophthalmologist is.
+  </p>
+
+  <dl class="config">
+    <div><dt>Annual target</dt><dd>100,000</dd></div>
+    <div><dt>Screening days</dt><dd>250</dd></div>
+    <div><dt>Sites/day</dt><dd>8</dd></div>
+    <div><dt>Compute workers</dt><dd>2</dd></div>
+    <div><dt>Grader FTE</dt><dd>2.0</dd></div>
+    <div><dt>Ophth. FTE</dt><dd>1.0</dd></div>
+    <div><dt>Uplink/site</dt><dd>4 Mbps</dd></div>
+  </dl>
+</header>
+
+<div class="provenance">
+  <p><strong>What was actually run.</strong> Every figure on this page comes from
+  <code>drishtiCapacityDES.m</code>, an entity-level discrete-event simulation of
+  96,879 screened patients and 190,180 images, executed in MATLAB R2026a.</p>
+  <p>The companion Simulink flow model, <code>buildDRishtiSimulinkModel.m</code>, was
+  written but <strong>not executed</strong> — the build machine had base MATLAB only, with no
+  Simulink installed. Validate it with <code>compareSimulinkToDES.m</code> before relying
+  on its output.</p>
+</div>
+
+<section>
+  <div class="eyebrow">The pipeline, and how hard each stage works</div>
+  <h2>Five stages, one shared six-hour window</h2>
+  <p class="lede">
+    Every site captures inside the same session, so demand arrives as a daily
+    burst. Uplink and compute run around the clock and drain it; technicians,
+    graders and the specialist clinic only work their shift.
+  </p>
+
+  <div class="pipeline">
+    <div class="stage">
+      <div class="n">STAGE 1</div>
+      <h4>Acquisition</h4>
+      <p>Technician captures both eyes; the edge quality gate triggers recapture on reject.</p>
+      <div class="util">61.3%<span> of session</span></div>
+    </div>
+    <div class="stage">
+      <div class="n">STAGE 2</div>
+      <h4>Uplink</h4>
+      <p>Store-and-forward to the district server. Rejected images never travel.</p>
+      <div class="util">3.1%<span> of session</span></div>
+    </div>
+    <div class="stage">
+      <div class="n">STAGE 3</div>
+      <h4>Central compute</h4>
+      <p>Segmentation, CNN grading and Grad-CAM on serialised MATLAB workers.</p>
+      <div class="util">4.9%<span> of 24 h</span></div>
+    </div>
+    <div class="stage">
+      <div class="n">STAGE 4</div>
+      <h4>Human adjudication</h4>
+      <p>CNN/rule disagreements plus a 10% QA sample — 29.7% of all cases.</p>
+      <div class="util">26.9%<span> of shift</span></div>
+    </div>
+    <div class="stage">
+      <div class="n">STAGE 5</div>
+      <h4>Specialist referral</h4>
+      <p>7.0% referable, booked against 36 appointment slots per day.</p>
+      <div class="util">74.9%<span> of slots</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Bottleneck ranking at 100,000 patients/year</div>
+  <h2>Four resources idle, one nearly full</h2>
+
+  <div class="bars">
+    <div class="bar-row">
+      <div class="name">Ophthalmologist <em>appointment slots</em></div>
+      <div class="track"><div class="fill warn" style="width:74.9%"></div></div>
+      <div class="val">74.9%</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Technician <em>session hours</em></div>
+      <div class="track"><div class="fill ok" style="width:61.3%"></div></div>
+      <div class="val">61.3%</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Grader <em>shift hours</em></div>
+      <div class="track"><div class="fill ok" style="width:26.9%"></div></div>
+      <div class="val">26.9%</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Compute worker <em>24-hour day</em></div>
+      <div class="track"><div class="fill ok" style="width:4.9%"></div></div>
+      <div class="val">4.9%</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Uplink <em>session hours</em></div>
+      <div class="track"><div class="fill ok" style="width:3.1%"></div></div>
+      <div class="val">3.1%</div>
+    </div>
+  </div>
+  <p class="bars-note">Vertical rule marks the 85% planning ceiling.</p>
+
+  <p>
+    The automated pass is effectively instantaneous against clinic tempo: a
+    median of <strong>0.4 minutes</strong> from capture to graded result, and 100% of
+    patients get a result before they leave the camp. What patients wait for is
+    people, not silicon.
+  </p>
+</section>
+
+<section class="finding">
+  <h3>1. Average utilisation hides the compute requirement</h3>
+  <p>
+    One worker at 11 s/image sits at 9.8% of a 24-hour day — which suggests
+    enormous headroom. It has far less than that. Because all eight sites capture
+    in the same six hours, the number that governs queueing is utilisation
+    <em>during the session</em>: 39.3%, four times higher.
+  </p>
+  <p>
+    That distinction decides whether same-session delivery survives. Once session
+    utilisation passes 100%, the queue stops draining before the camp closes:
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>One worker · per-image compute time sweep</caption>
+      <thead>
+        <tr>
+          <th>sec/image</th>
+          <th class="num">24-hour util</th>
+          <th class="num">Session util</th>
+          <th class="num">p95 queue wait</th>
+          <th class="num">Same-session results</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>11</td><td class="num">9.8%</td><td class="num">39.3%</td><td class="num">0.6 min</td><td class="num ok">100%</td></tr>
+        <tr><td>20</td><td class="num">17.7%</td><td class="num">70.8%</td><td class="num">3.0 min</td><td class="num ok">100%</td></tr>
+        <tr><td>24</td><td class="num">21.2%</td><td class="num">84.9%</td><td class="num">7.5 min</td><td class="num ok">100%</td></tr>
+        <tr class="flag"><td>40</td><td class="num">35.3%</td><td class="num">141.2%</td><td class="num">153 min</td><td class="num crit">22.1%</td></tr>
+        <tr class="flag"><td>60</td><td class="num">52.9%</td><td class="num">211.7%</td><td class="num">391 min</td><td class="num crit">8.2%</td></tr>
+        <tr class="flag"><td>120</td><td class="num">105.8%</td><td class="num">423.0%</td><td class="num">344 h</td><td class="num crit">0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    One worker holds to about <strong>24 s/image</strong>; two workers to about 48 s.
+    Past that, same-session delivery collapses from 100% to 22% while the
+    24-hour utilisation figure still reads a reassuring 35%.
+  </p>
+  <p>
+    The 11 s estimate is read off the algorithms, not measured — 24 matched-filter
+    convolutions at 1024 px, a 51×51 <code>medfilt2</code>, a large-sigma
+    <code>imgaussfilt</code>, and <code>bwskel</code> with a per-segment tortuosity
+    loop. It is the least reliable input on this page, and it is also the easiest
+    to fix: benchmark <code>segmentRetina</code> on the actual district hardware
+    before buying anything.
+  </p>
+  <p>
+    Note where the cost sits. The classical segmentation dominates; CNN inference
+    at 224×224 is a rounding error beside it. A GPU buys you very little here.
+  </p>
+</section>
+
+<section class="finding">
+  <h3>2. The specialist clinic is what breaks as the programme grows</h3>
+  <p>
+    Scale the programme and four of the five resources stay comfortable.
+    Ophthalmologist slots do not — they cross 100% somewhere between 100,000 and
+    150,000 patients, and past that the referral backlog grows without bound.
+  </p>
+
+  <figure>
+    <svg class="chart" viewBox="0 0 720 300" role="img" aria-label="Bar chart of 95th-percentile referral appointment wait against annual patient volume: 0 days at 50,000 and 100,000 patients, 19 days at 150,000, 42 days at 200,000, 52 days at 300,000.">
+      <!-- gridlines -->
+      <g stroke="var(--rule)" stroke-width="1">
+        <line x1="72" y1="240" x2="700" y2="240"/>
+        <line x1="72" y1="185" x2="700" y2="185"/>
+        <line x1="72" y1="130" x2="700" y2="130"/>
+        <line x1="72" y1="75"  x2="700" y2="75"/>
+        <line x1="72" y1="20"  x2="700" y2="20"/>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-mute)" text-anchor="end">
+        <text x="62" y="244">0</text>
+        <text x="62" y="189">15</text>
+        <text x="62" y="134">30</text>
+        <text x="62" y="79">45</text>
+        <text x="62" y="24">60</text>
+      </g>
+      <text x="14" y="130" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-mute)" transform="rotate(-90 14 130)" text-anchor="middle">p95 wait (days)</text>
+
+      <!-- bars: scale 60 days = 220px -->
+      <g>
+        <rect x="100" y="238" width="86" height="2"   fill="var(--ok)"/>
+        <rect x="220" y="238" width="86" height="2"   fill="var(--ok)"/>
+        <rect x="340" y="170" width="86" height="70"  fill="var(--warn)"/>
+        <rect x="460" y="86"  width="86" height="154" fill="var(--crit)"/>
+        <rect x="580" y="49"  width="86" height="191" fill="var(--crit)"/>
+      </g>
+
+      <!-- value labels -->
+      <g font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">
+        <text x="143" y="230">0</text>
+        <text x="263" y="230">0</text>
+        <text x="383" y="162">19</text>
+        <text x="503" y="78">42</text>
+        <text x="623" y="41">52</text>
+      </g>
+
+      <!-- x labels -->
+      <g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-mute)" text-anchor="middle">
+        <text x="143" y="260">50k</text>
+        <text x="263" y="260">100k</text>
+        <text x="383" y="260">150k</text>
+        <text x="503" y="260">200k</text>
+        <text x="623" y="260">300k</text>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-mute)" text-anchor="middle">
+        <text x="143" y="278">38%</text>
+        <text x="263" y="278" font-weight="600" fill="var(--warn)">75%</text>
+        <text x="383" y="278" font-weight="600" fill="var(--crit)">108%</text>
+        <text x="503" y="278" font-weight="600" fill="var(--crit)">118%</text>
+        <text x="623" y="278" font-weight="600" fill="var(--crit)">122%</text>
+      </g>
+      <text x="386" y="296" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-mute)" text-anchor="middle">annual patients · ophthalmologist slot utilisation</text>
+    </svg>
+    <figcaption>
+      At one ophthalmologist FTE. Utilisation appears to flatten above 150,000
+      only because throughput upstream is already capped — 23% of demand goes
+      unseated at 200,000 patients, so fewer referrals are generated than the
+      population implies.
+    </figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Ophthalmologist FTE sweep at 100,000 patients/year</caption>
+      <thead>
+        <tr>
+          <th>FTE</th>
+          <th class="num">Slot utilisation</th>
+          <th class="num">Mean wait</th>
+          <th class="num">p95 wait</th>
+          <th class="num">Peak backlog</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="flag"><td>0.5</td><td class="num crit">149.8%</td><td class="num">64.0 d</td><td class="num">119 d</td><td class="num">2,242</td></tr>
+        <tr class="pick"><td>1.0</td><td class="num">74.9%</td><td class="num">0.0 d</td><td class="num">0 d</td><td class="num">5</td></tr>
+        <tr><td>1.5</td><td class="num">49.9%</td><td class="num">0.0 d</td><td class="num">0 d</td><td class="num">0</td></tr>
+        <tr><td>2.0</td><td class="num">37.5%</td><td class="num">0.0 d</td><td class="num">0 d</td><td class="num">0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    The cliff is steep because the resource is lumpy: half an FTE produces a
+    2,242-case backlog and a four-month wait, one FTE produces essentially none.
+    There is no graceful degradation to plan around — the specialist session is
+    either there or it is not.
+  </p>
+</section>
+
+<section class="finding">
+  <h3>3. Bandwidth is a solved problem above half a megabit</h3>
+  <p>
+    Rural connectivity is the usual objection to telemedicine screening. Here it
+    does not bind. Two design choices do the work: the quality gate runs at the
+    edge, so rejected images never travel, and transfer is store-and-forward, so
+    a backlog built during the session drains afterwards.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Uplink sweep · 190,180 images, 650 GB/year total</caption>
+      <thead>
+        <tr>
+          <th>Per-site uplink</th>
+          <th class="num">Session utilisation</th>
+          <th class="num">p95 upload wait</th>
+          <th class="num">Same-session results</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0.25 Mbps</td><td class="num">49.3%</td><td class="num">8.2 min</td><td class="num ok">100%</td></tr>
+        <tr><td>0.5 Mbps</td><td class="num">24.7%</td><td class="num">2.4 min</td><td class="num ok">100%</td></tr>
+        <tr><td>1 Mbps</td><td class="num">12.3%</td><td class="num">0.8 min</td><td class="num ok">100%</td></tr>
+        <tr class="pick"><td>4 Mbps</td><td class="num">3.1%</td><td class="num">0.1 min</td><td class="num ok">100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Even a quarter-megabit link delivers every result within the session. Money
+    earmarked for connectivity upgrades buys more health at the specialist clinic.
+  </p>
+</section>
+
+<section>
+  <div class="eyebrow">Recommendation</div>
+  <h2>The baseline over-buys compute and under-buys camps</h2>
+  <p class="lede">
+    Minimum configuration meeting: unmet demand under 2%, every resource below
+    85%, at least 95% of reports inside the SLA, specialist p95 wait under 14 days.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Baseline versus minimum feasible</caption>
+      <thead>
+        <tr><th>Resource</th><th class="num">Baseline</th><th class="num">Minimum feasible</th><th>Change</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Screening sites per day</td><td class="num">8</td><td class="num">10</td><td>Add two</td></tr>
+        <tr><td>MATLAB compute workers</td><td class="num">2</td><td class="num">1</td><td>Halve</td></tr>
+        <tr><td>Grader FTE</td><td class="num">2.0</td><td class="num">1.0</td><td>Halve</td></tr>
+        <tr><td>Ophthalmologist FTE</td><td class="num">1.0</td><td class="num">1.0</td><td>Hold — and protect it</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="verdict">
+    <h3>Verified as a combined configuration</h3>
+    <p style="max-width:none">
+      97,450 patients screened against a 100,000 target — 1.3% of demand unseated,
+      down from 2.1%. Every resource under 76%. Compute at 39.3% of session hours
+      on a single worker. p95 report turnaround 0.25 hours; 100% of patients still
+      receive a result before leaving the camp.
+    </p>
+  </div>
+
+  <p>
+    Eight sites is the quiet failure in the baseline: it leaves 2.1% of demand
+    unseated, because a camp that runs out of session hours turns people away
+    rather than queueing them. Ten sites recovers most of that. The two freed
+    compute workers and the freed grader FTE cost more, in unscreened patients,
+    than they were ever going to save.
+  </p>
+</section>
+
+<section>
+  <div class="eyebrow">Caveats</div>
+  <h2>What would change these answers</h2>
+  <ul>
+    <li><strong>Per-image compute time (11 s, estimated).</strong> Governs the whole
+      compute conclusion. Measurable on your hardware this afternoon.</li>
+    <li><strong>CNN/rule disagreement rate (22%, assumed).</strong> Sets grader load
+      directly. The checkpoint currently in the repository is a three-epoch demo
+      fine-tune, so the real rate is unknown and probably worse.</li>
+    <li><strong>Referable rate (7%, from literature).</strong> Sets specialist load,
+      which is the binding constraint — so this is the assumption most worth
+      replacing with district data.</li>
+    <li><strong>Loss to follow-up is not modelled.</strong> The referral stage books
+      appointments; it does not model whether patients attend. In practice that is
+      a large effect and it works in the opposite direction to everything here.</li>
+    <li><strong>Turned-away patients are not rescheduled.</strong> Where appointment
+      booking exists, achievable throughput is higher than modelled.</li>
+  </ul>
+</section>
+
+<footer>
+  <span>Discrete-event model · 250 working days · seed 42 · MATLAB R2026a</span>
+  <span><a href="https://github.com/Shaurya-web548/DRishti">github.com/Shaurya-web548/DRishti</a> · <code>capacity-model/</code></span>
+</footer>
+
+</div>
+</body>
+</html>

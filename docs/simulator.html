@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🎛️</text></svg>">
+<title>Screening Capacity Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#f2f5f3; --surface:#ffffff; --sunken:#e8ede9;
+    --ink:#16211c; --ink-soft:#4a5a51; --ink-mute:#6d7d74;
+    --rule:#d3ddd6; --rule-firm:#b9c7be;
+    --accent:#2f6b4f; --accent-soft:#dfeae2;
+    --ok:#3d8b5f; --warn:#b5811f; --crit:#b03a2e;
+    --ok-soft:#dcece2; --warn-soft:#f5e9d2; --crit-soft:#f2ddd9;
+    --display:"Zilla Slab",Georgia,serif;
+    --body:"Source Sans 3",system-ui,-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0e1613; --surface:#16211c; --sunken:#1d2a24;
+      --ink:#e4ebe6; --ink-soft:#b0bfb6; --ink-mute:#8a9a91;
+      --rule:#2a3831; --rule-firm:#3b4d43;
+      --accent:#6cbf90; --accent-soft:#1e3228;
+      --ok:#6cbf90; --warn:#d8a542; --crit:#e0705f;
+      --ok-soft:#1b2f24; --warn-soft:#33290f; --crit-soft:#33201d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0e1613; --surface:#16211c; --sunken:#1d2a24;
+    --ink:#e4ebe6; --ink-soft:#b0bfb6; --ink-mute:#8a9a91;
+    --rule:#2a3831; --rule-firm:#3b4d43;
+    --accent:#6cbf90; --accent-soft:#1e3228;
+    --ok:#6cbf90; --warn:#d8a542; --crit:#e0705f;
+    --ok-soft:#1b2f24; --warn-soft:#33290f; --crit-soft:#33201d;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--body); font-size:16px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3 { font-family:var(--display); margin:0; text-wrap:balance; }
+
+  .top {
+    border-bottom:2px solid var(--ink);
+    padding:26px 30px 20px;
+    display:flex; justify-content:space-between; align-items:flex-end;
+    gap:24px; flex-wrap:wrap;
+  }
+  .top h1 { font-size:1.6rem; font-weight:700; letter-spacing:-0.01em; }
+  .top p { margin:6px 0 0; color:var(--ink-soft); font-size:0.94rem; max-width:62ch; }
+  .runstate {
+    font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--ink-mute);
+    display:flex; align-items:center; gap:8px;
+  }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--ok); }
+  .dot.busy { background:var(--warn); }
+
+  .layout {
+    display:grid; grid-template-columns:308px 1fr;
+    gap:0; align-items:start;
+  }
+  .controls {
+    border-right:1px solid var(--rule);
+    padding:24px 26px 60px;
+    position:sticky; top:0;
+    max-height:100vh; overflow-y:auto;
+  }
+  .results { padding:24px 30px 70px; min-width:0; }
+
+  .grouplabel {
+    font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--accent); font-weight:600;
+    margin:22px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--rule);
+  }
+  .grouplabel:first-child { margin-top:0; }
+
+  .ctl { margin-bottom:16px; }
+  .ctl-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .ctl label { font-size:0.88rem; color:var(--ink-soft); }
+  .ctl output {
+    font-family:var(--mono); font-size:0.92rem; font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  input[type=range] {
+    width:100%; margin:7px 0 0; accent-color:var(--accent);
+    height:20px; cursor:pointer;
+  }
+  input[type=range]:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+  button.reset {
+    margin-top:20px; width:100%;
+    font-family:var(--body); font-size:0.88rem; font-weight:600;
+    background:var(--surface); color:var(--ink);
+    border:1px solid var(--rule-firm); border-radius:2px;
+    padding:9px 12px; cursor:pointer;
+  }
+  button.reset:hover { background:var(--sunken); }
+  button.reset:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* verdict */
+  .verdict {
+    border-left:4px solid var(--accent);
+    background:var(--accent-soft);
+    padding:16px 20px; margin-bottom:24px;
+  }
+  .verdict.warn { border-left-color:var(--warn); background:var(--warn-soft); }
+  .verdict.crit { border-left-color:var(--crit); background:var(--crit-soft); }
+  .verdict .vlabel {
+    font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--ink-mute);
+  }
+  .verdict h2 { font-size:1.24rem; font-weight:600; margin:5px 0 4px; }
+  .verdict p { margin:0; font-size:0.92rem; color:var(--ink-soft); }
+
+  /* tiles */
+  .tiles {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(146px,1fr));
+    gap:1px; background:var(--rule); border:1px solid var(--rule);
+    margin-bottom:26px;
+  }
+  .tile { background:var(--paper); padding:13px 15px; }
+  .tile .t-label {
+    font-family:var(--mono); font-size:0.64rem; letter-spacing:0.09em;
+    text-transform:uppercase; color:var(--ink-mute);
+  }
+  .tile .t-val {
+    font-family:var(--mono); font-size:1.42rem; font-weight:600;
+    font-variant-numeric:tabular-nums; margin-top:3px; line-height:1.15;
+  }
+  .tile .t-sub { font-size:0.76rem; color:var(--ink-mute); }
+  .t-val.ok { color:var(--ok); } .t-val.warn { color:var(--warn); } .t-val.crit { color:var(--crit); }
+
+  h3.sec {
+    font-size:1.02rem; font-weight:600; margin:0 0 4px;
+  }
+  .sec-note { font-size:0.84rem; color:var(--ink-mute); margin:0 0 14px; }
+
+  /* bars */
+  .bars { display:flex; flex-direction:column; margin-bottom:28px; }
+  .bar-row {
+    display:grid; grid-template-columns:184px 1fr 116px;
+    align-items:center; gap:14px;
+    padding:9px 0; border-bottom:1px solid var(--rule);
+  }
+  .bar-row .nm { font-size:0.9rem; }
+  .bar-row .nm em { font-style:normal; display:block; font-size:0.76rem; color:var(--ink-mute); }
+  .track { position:relative; background:var(--sunken); height:19px; overflow:hidden; }
+  .fill { height:100%; transition:width .18s ease; }
+  .fill.ok{background:var(--ok);} .fill.warn{background:var(--warn);} .fill.crit{background:var(--crit);}
+  .track .ceiling {
+    position:absolute; left:85%; top:0; bottom:0; width:1px;
+    background:var(--ink-mute); opacity:.65;
+  }
+  .bar-row .rt {
+    text-align:right; font-family:var(--mono); font-size:0.88rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .bar-row .rt b { font-weight:600; font-size:0.95rem; }
+  .bar-row .rt span { display:block; font-size:0.72rem; color:var(--ink-mute); }
+
+  .table-wrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:440px; font-size:0.88rem; }
+  th,td { padding:7px 14px 7px 0; text-align:left; }
+  thead th {
+    font-family:var(--mono); font-size:0.66rem; letter-spacing:0.07em;
+    text-transform:uppercase; color:var(--ink-mute); font-weight:500;
+    border-bottom:1px solid var(--rule-firm);
+  }
+  tbody tr { border-bottom:1px solid var(--rule); }
+  td.n,th.n { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; padding-right:18px; }
+
+  footer {
+    margin-top:34px; padding-top:16px; border-top:1px solid var(--rule);
+    font-size:0.82rem; color:var(--ink-mute);
+  }
+  footer a { color:var(--accent); }
+  code { font-family:var(--mono); font-size:0.86em; background:var(--sunken); padding:.1em .35em; border-radius:3px; }
+
+  @media (max-width:900px) {
+    .layout { grid-template-columns:1fr; }
+    .controls { position:static; max-height:none; border-right:none; border-bottom:1px solid var(--rule); }
+    .bar-row { grid-template-columns:122px 1fr 96px; gap:10px; }
+  }
+  @media (prefers-reduced-motion:reduce) { .fill { transition:none; } }
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <h1>Screening Capacity Simulator</h1>
+    <p>The DRishti district model, running live. Move a control and the
+       discrete-event simulation re-runs in full — every patient, every image,
+       every queue — over 250 working days.</p>
+  </div>
+  <div class="runstate"><span class="dot" id="dot"></span><span id="runtxt">ready</span></div>
+</div>
+
+<div class="layout">
+  <aside class="controls" id="controls">
+    <div class="grouplabel">Demand</div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="annualPatients">Patients per year</label><output id="o-annualPatients"></output></div>
+      <input type="range" id="annualPatients" min="25000" max="300000" step="5000" value="100000">
+    </div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="sites">Screening sites per day</label><output id="o-sites"></output></div>
+      <input type="range" id="sites" min="3" max="18" step="1" value="8">
+    </div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="sessionHours">Session length</label><output id="o-sessionHours"></output></div>
+      <input type="range" id="sessionHours" min="3" max="10" step="1" value="6">
+    </div>
+
+    <div class="grouplabel">Network</div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="uplinkIdx">Uplink per site</label><output id="o-uplinkIdx"></output></div>
+      <input type="range" id="uplinkIdx" min="0" max="6" step="1" value="4">
+    </div>
+
+    <div class="grouplabel">Compute</div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="workers">MATLAB workers</label><output id="o-workers"></output></div>
+      <input type="range" id="workers" min="1" max="8" step="1" value="2">
+    </div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="procMeanSec">Seconds per image</label><output id="o-procMeanSec"></output></div>
+      <input type="range" id="procMeanSec" min="4" max="120" step="1" value="11">
+    </div>
+
+    <div class="grouplabel">People</div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="graderFTE">Grader FTE</label><output id="o-graderFTE"></output></div>
+      <input type="range" id="graderFTE" min="1" max="6" step="1" value="2">
+    </div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="ophthFTE">Ophthalmologist FTE</label><output id="o-ophthFTE"></output></div>
+      <input type="range" id="ophthFTE" min="0.5" max="4" step="0.5" value="1">
+    </div>
+
+    <div class="grouplabel">Clinical rates</div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="pDisagree">CNN / rule disagreement</label><output id="o-pDisagree"></output></div>
+      <input type="range" id="pDisagree" min="0.02" max="0.45" step="0.01" value="0.22">
+    </div>
+    <div class="ctl">
+      <div class="ctl-head"><label for="pReferable">Referable rate</label><output id="o-pReferable"></output></div>
+      <input type="range" id="pReferable" min="0.02" max="0.20" step="0.01" value="0.07">
+    </div>
+
+    <button class="reset" id="reset">Reset to baseline</button>
+  </aside>
+
+  <main class="results">
+    <div class="verdict" id="verdict">
+      <div class="vlabel">Binding constraint</div>
+      <h2 id="v-title">—</h2>
+      <p id="v-body">—</p>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <h3 class="sec">Resource utilisation</h3>
+    <p class="sec-note">Vertical rule marks the 85% planning ceiling. Compute is
+       shown against session hours, not the 24-hour average — that is the number
+       that governs queueing when every site captures in the same window.</p>
+    <div class="bars" id="bars"></div>
+
+    <h3 class="sec">Flow and waiting</h3>
+    <p class="sec-note">Per-patient figures across the simulated year.</p>
+    <div class="table-wrap"><table id="detail">
+      <thead><tr><th>Stage</th><th class="n">Volume</th><th class="n">Mean wait</th><th class="n">p95 wait</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+
+    <footer>
+      Faithful port of <code>drishtiCapacityDES.m</code> — same queue discipline,
+      same distributions, seeded for repeatability. Source and the MATLAB original:
+      <a href="https://github.com/Shaurya-web548/DRishti/tree/main/capacity-model">github.com/Shaurya-web548/DRishti</a>.
+      Not a clinical planning tool on its own; the assumptions behind it are listed in the repository.
+    </footer>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+const UPLINKS = [0.25, 0.5, 1, 2, 4, 8, 16];
+
+const BASE = {
+  annualPatients:100000, workingDays:250, sites:8, sessionHours:6, sessionStartH:9,
+  captureMin:4.0, retryMin:1.5, maxRetries:2,
+  pDifficultPatient:0.08, pRejectNormal:0.06, pRejectDifficult:0.70, pEnhanced:0.25,
+  imageMB:3.5, uplinkIdx:4,
+  workers:2, procMeanSec:11, procCV:0.35, enhanceExtraSec:0.4,
+  pDisagree:0.22, qaSampleRate:0.10, reviewMin:2.5, qaMin:1.5,
+  graderFTE:2, graderHoursPerDay:8, graderStartH:9,
+  pReferable:0.07, ophthFTE:1, ophthHoursPerDay:6, ophthMinPerCase:10,
+  sameSessionMin:30, slaHours:24, seed:42
+};
+
+/* ---------------- deterministic RNG ---------------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const expRnd = (mu, r) => -mu * Math.log(1 - r());
+function lognRnd(mean, cv, r){
+  const s = Math.sqrt(Math.log(1 + cv*cv));
+  const mu = Math.log(mean) - 0.5*s*s;
+  let u = 1 - r(), v = 1 - r();
+  const z = Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  return Math.exp(mu + s*z);
+}
+function poisson(lambda, r){
+  const L = Math.exp(-lambda);
+  let k = 0, p = 1;
+  const cap = 20*lambda + 100;
+  for(;;){ p *= r(); if (p <= L) break; k++; if (k > cap) break; }
+  return k;
+}
+function pctl(sorted, q){
+  const n = sorted.length;
+  if (!n) return NaN;
+  if (n === 1) return sorted[0];
+  const pos = (q/100)*(n-1);
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  return sorted[lo] + (pos-lo)*(sorted[hi]-sorted[lo]);
+}
+function nextWorkTime(t, startH, endH){
+  const d = Math.floor(t/24), h = t - 24*d;
+  if (h < startH) return 24*d + startH;
+  if (h >= endH)  return 24*(d+1) + startH;
+  return t;
+}
+function serveInShift(tStart, durH, startH, endH){
+  let t = nextWorkTime(tStart, startH, endH), rem = durH, guard = 0;
+  while (rem > 1e-12){
+    if (++guard > 100000) break;
+    const d = Math.floor(t/24), h = t - 24*d, avail = endH - h;
+    if (rem <= avail){ t += rem; rem = 0; }
+    else { rem -= avail; t = 24*(d+1) + startH; }
+  }
+  return t;
+}
+
+/* ---------------- the simulation ---------------- */
+function simulate(p){
+  const rnd = mulberry32(p.seed);
+  const DAY = 24;
+  const perSiteDay = p.annualPatients / (p.workingDays * p.sites);
+  const maxPat = Math.ceil(p.workingDays * p.sites * perSiteDay) + p.sites*p.workingDays + 64;
+  const maxImg = 2*maxPat;
+
+  const patCapEnd = new Float64Array(maxPat);
+  const patUngrad = new Uint8Array(maxPat);
+  const imgPat    = new Int32Array(maxImg);
+  const imgSite   = new Int32Array(maxImg);
+  const imgReady  = new Float64Array(maxImg);
+  const imgEnh    = new Uint8Array(maxImg);
+  let nPat = 0, nImg = 0, turnedAway = 0;
+  const techBusy = new Float64Array(p.sites);
+  const uploadSec = (p.imageMB*8)/p.uplinkMbps;
+
+  /* --- acquisition + edge quality gate --- */
+  for (let d = 0; d < p.workingDays; d++){
+    const dayStart = d*DAY + p.sessionStartH;
+    const dayEnd   = dayStart + p.sessionHours;
+    for (let s = 0; s < p.sites; s++){
+      const nToday = poisson(perSiteDay, rnd);
+      if (!nToday) continue;
+      const arr = new Float64Array(nToday);
+      for (let i = 0; i < nToday; i++) arr[i] = dayStart + p.sessionHours*rnd();
+      arr.sort();
+      let techFree = dayStart;
+      for (let k = 0; k < nToday; k++){
+        const tStart = Math.max(arr[k], techFree);
+        if (tStart >= dayEnd){ turnedAway += nToday - k; break; }
+        const pRej = rnd() < p.pDifficultPatient ? p.pRejectDifficult : p.pRejectNormal;
+        let capMin = expRnd(p.captureMin, rnd);
+        let gradable = 0;
+        const enh = [false,false];
+        for (let eye = 0; eye < 2; eye++){
+          let accepted = false;
+          for (let a = 0; a <= p.maxRetries; a++){
+            if (rnd() >= pRej){ accepted = true; break; }
+            capMin += expRnd(p.retryMin, rnd);
+          }
+          if (accepted){ enh[gradable] = rnd() < p.pEnhanced; gradable++; }
+        }
+        const tEnd = tStart + capMin/60;
+        techFree = tEnd;
+        techBusy[s] += capMin;
+        patCapEnd[nPat] = tEnd;
+        patUngrad[nPat] = gradable === 0 ? 1 : 0;
+        for (let j = 0; j < gradable; j++){
+          imgPat[nImg]=nPat; imgSite[nImg]=s; imgReady[nImg]=tEnd;
+          imgEnh[nImg]= enh[j]?1:0; nImg++;
+        }
+        nPat++;
+      }
+    }
+  }
+
+  /* --- uplink: one store-and-forward server per site --- */
+  const imgUpEnd = new Float64Array(nImg);
+  const upWait   = new Float64Array(nImg);
+  const bySite = [];
+  for (let s = 0; s < p.sites; s++) bySite.push([]);
+  for (let i = 0; i < nImg; i++) bySite[imgSite[i]].push(i);
+  for (let s = 0; s < p.sites; s++){
+    const idx = bySite[s];
+    idx.sort((a,b) => imgReady[a]-imgReady[b]);
+    let free = 0;
+    for (const i of idx){
+      const st = Math.max(imgReady[i], free);
+      const en = st + uploadSec/3600;
+      imgUpEnd[i] = en; free = en;
+      upWait[i] = (st - imgReady[i])*60;
+    }
+  }
+
+  /* --- central compute: W serialised workers --- */
+  const procSec = new Float64Array(nImg);
+  for (let i = 0; i < nImg; i++){
+    procSec[i] = lognRnd(p.procMeanSec, p.procCV, rnd) + (imgEnh[i] ? p.enhanceExtraSec : 0);
+  }
+  const order = new Int32Array(nImg);
+  for (let i = 0; i < nImg; i++) order[i] = i;
+  const ord = Array.from(order).sort((a,b) => imgUpEnd[a]-imgUpEnd[b]);
+  const workerFree = new Float64Array(p.workers);
+  const imgProcEnd = new Float64Array(nImg);
+  const procWait   = new Float64Array(nImg);
+  let procBusyH = 0;
+  for (const i of ord){
+    let w = 0;
+    for (let j = 1; j < p.workers; j++) if (workerFree[j] < workerFree[w]) w = j;
+    const st = Math.max(imgUpEnd[i], workerFree[w]);
+    const en = st + procSec[i]/3600;
+    workerFree[w] = en; imgProcEnd[i] = en;
+    procWait[i] = (st - imgUpEnd[i])*60;
+    procBusyH += procSec[i]/3600;
+  }
+
+  /* --- automated decision --- */
+  const patAuto = new Float64Array(nPat);
+  for (let i = 0; i < nPat; i++) if (patUngrad[i]) patAuto[i] = patCapEnd[i];
+  for (let i = 0; i < nImg; i++){
+    const q = imgPat[i];
+    if (imgProcEnd[i] > patAuto[q]) patAuto[q] = imgProcEnd[i];
+  }
+
+  const needsHuman = new Uint8Array(nPat);
+  const revMin = new Float64Array(nPat);
+  let screened = 0, nDisagree = 0, nQA = 0;
+  for (let i = 0; i < nPat; i++){
+    if (patUngrad[i]) continue;
+    screened++;
+    if (rnd() < p.pDisagree){ needsHuman[i]=1; nDisagree++; revMin[i]=expRnd(p.reviewMin,rnd); }
+    else if (rnd() < p.qaSampleRate){ needsHuman[i]=1; nQA++; revMin[i]=expRnd(p.qaMin,rnd); }
+  }
+
+  /* --- human adjudication, shift-limited --- */
+  const hIdx = [];
+  for (let i = 0; i < nPat; i++) if (needsHuman[i]) hIdx.push(i);
+  hIdx.sort((a,b) => patAuto[a]-patAuto[b]);
+  const nG = Math.max(1, Math.round(p.graderFTE));
+  const gFree = new Float64Array(nG);
+  const patReport = Float64Array.from(patAuto);
+  const gWait = [];
+  let gBusyMin = 0;
+  const wS = p.graderStartH, wE = p.graderStartH + p.graderHoursPerDay;
+  for (const i of hIdx){
+    let g = 0;
+    for (let j = 1; j < nG; j++) if (gFree[j] < gFree[g]) g = j;
+    let st = Math.max(patAuto[i], gFree[g]);
+    st = nextWorkTime(st, wS, wE);
+    const en = serveInShift(st, revMin[i]/60, wS, wE);
+    gFree[g] = en; patReport[i] = en;
+    gWait.push(st - patAuto[i]);
+    gBusyMin += revMin[i];
+  }
+
+  /* --- specialist referral, fixed slots per day --- */
+  const refIdx = [];
+  for (let i = 0; i < nPat; i++) if (!patUngrad[i] && rnd() < p.pReferable) refIdx.push(i);
+  refIdx.sort((a,b) => patReport[a]-patReport[b]);
+  const slots = Math.floor(p.ophthFTE*p.ophthHoursPerDay*60/p.ophthMinPerCase);
+  const apptWait = [];
+  let cursor = 0, used = 0;
+  for (const i of refIdx){
+    const readyDay = Math.floor(patReport[i]/DAY) + 1;
+    if (readyDay > cursor){ cursor = readyDay; used = 0; }
+    while (used >= slots){ cursor++; used = 0; }
+    used++;
+    apptWait.push(cursor - readyDay);
+  }
+
+  /* --- metrics --- */
+  const turn = [], auto = [];
+  for (let i = 0; i < nPat; i++){
+    if (patUngrad[i]) continue;
+    turn.push(patReport[i] - patCapEnd[i]);
+    auto.push((patAuto[i] - patCapEnd[i])*60);
+  }
+  const sortNum = a => Float64Array.from(a).sort();
+  const sTurn = sortNum(turn), sAuto = sortNum(auto);
+  const sUp = sortNum(upWait.subarray(0,nImg)), sProc = sortNum(procWait.subarray(0,nImg));
+  const sG = sortNum(gWait), sA = sortNum(apptWait);
+
+  const simH = p.workingDays*DAY;
+  const sessH = p.workingDays*p.sessionHours;
+  const mean = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+
+  return {
+    target:p.annualPatients, presented:nPat, turnedAway,
+    unmetPct: 100*turnedAway/Math.max(1,nPat+turnedAway),
+    screened, ungradable:nPat-screened,
+    images:nImg, gbYear:nImg*p.imageMB/1024,
+    uploadSec,
+    techUtil: 100*(techBusy.reduce((a,b)=>a+b,0)/p.sites)/(sessH*60),
+    linkUtil: 100*(nImg/p.sites*uploadSec/3600)/sessH,
+    cpuUtil24: 100*procBusyH/(p.workers*simH),
+    cpuUtilSess: 100*procBusyH/(p.workers*sessH),
+    graderUtil: 100*(gBusyMin/60)/(nG*p.graderHoursPerDay*p.workingDays),
+    ophthUtil: 100*(refIdx.length/p.workingDays)/Math.max(1,slots),
+    slots, refCases:refIdx.length,
+    humanCases:hIdx.length, nDisagree, nQA,
+    upMean:mean(upWait.subarray(0,nImg)), upP95:pctl(sUp,95),
+    procMean:mean(procWait.subarray(0,nImg)), procP95:pctl(sProc,95),
+    gMean:mean(gWait), gP95:pctl(sG,95),
+    aMean:mean(apptWait), aP95:pctl(sA,95),
+    autoMedian:pctl(sAuto,50), autoP95:pctl(sAuto,95),
+    sameSession: 100*auto.filter(v => v <= p.sameSessionMin).length/Math.max(1,auto.length),
+    turnMedian:pctl(sTurn,50), turnP95:pctl(sTurn,95),
+    slaPct: 100*turn.filter(v => v <= p.slaHours).length/Math.max(1,turn.length)
+  };
+}
+
+/* ---------------- presentation ---------------- */
+const IDS = ["annualPatients","sites","sessionHours","uplinkIdx","workers",
+             "procMeanSec","graderFTE","ophthFTE","pDisagree","pReferable"];
+
+function readParams(){
+  const p = Object.assign({}, BASE);
+  for (const id of IDS) p[id] = parseFloat(document.getElementById(id).value);
+  p.uplinkMbps = UPLINKS[p.uplinkIdx];
+  return p;
+}
+function fmtNum(v, d=0){
+  return v.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function labelFor(id, p){
+  switch(id){
+    case "annualPatients": return fmtNum(p.annualPatients);
+    case "sites": return p.sites;
+    case "sessionHours": return p.sessionHours + " h";
+    case "uplinkIdx": return UPLINKS[p.uplinkIdx] + " Mbps";
+    case "workers": return p.workers;
+    case "procMeanSec": return p.procMeanSec + " s";
+    case "graderFTE": return p.graderFTE.toFixed(1);
+    case "ophthFTE": return p.ophthFTE.toFixed(1);
+    case "pDisagree": return Math.round(p.pDisagree*100) + "%";
+    case "pReferable": return Math.round(p.pReferable*100) + "%";
+  }
+}
+const sev = u => u >= 100 ? "crit" : u >= 85 ? "warn" : "ok";
+
+function render(r, p){
+  for (const id of IDS) document.getElementById("o-"+id).textContent = labelFor(id, p);
+
+  const res = [
+    {k:"Ophthalmologist", sub:"appointment slots", u:r.ophthUtil,
+     rt:`${r.aP95.toFixed(0)} d`, rl:"p95 wait"},
+    {k:"Technician", sub:"session hours", u:r.techUtil,
+     rt:`${r.unmetPct.toFixed(1)}%`, rl:"demand unseated"},
+    {k:"Grader", sub:"shift hours", u:r.graderUtil,
+     rt:`${r.gP95.toFixed(1)} h`, rl:"p95 wait"},
+    {k:"Compute worker", sub:"session hours", u:r.cpuUtilSess,
+     rt:`${r.procP95.toFixed(1)} min`, rl:"p95 wait"},
+    {k:"Uplink", sub:"session hours", u:r.linkUtil,
+     rt:`${r.upP95.toFixed(1)} min`, rl:"p95 wait"}
+  ].sort((a,b) => b.u - a.u);
+
+  document.getElementById("bars").innerHTML = res.map(x => `
+    <div class="bar-row">
+      <div class="nm">${x.k}<em>${x.sub}</em></div>
+      <div class="track"><div class="fill ${sev(x.u)}" style="width:${Math.min(100,x.u)}%"></div><div class="ceiling"></div></div>
+      <div class="rt"><b>${x.u.toFixed(1)}%</b><span>${x.rt} ${x.rl}</span></div>
+    </div>`).join("");
+
+  const top = res[0];
+  const v = document.getElementById("verdict");
+  v.className = "verdict " + (top.u >= 100 ? "crit" : top.u >= 85 ? "warn" : "");
+  document.getElementById("v-title").textContent =
+    top.u >= 100 ? `${top.k} is over capacity` :
+    top.u >= 85  ? `${top.k} is near its ceiling` :
+                   `${top.k}, at ${top.u.toFixed(0)}% — nothing is saturated`;
+  document.getElementById("v-body").textContent =
+    top.u >= 100
+      ? `Demand exceeds ${top.k.toLowerCase()} capacity, so the queue never clears. Add capacity here; nothing else in the pipeline will help.`
+      : top.u >= 85
+      ? `This is the first resource that will break as volume grows. Everything downstream of it has headroom.`
+      : `All five resources sit under the 85% planning ceiling at this configuration.`;
+
+  const tiles = [
+    {l:"Screened", v:fmtNum(r.screened), s:`of ${fmtNum(r.target)} target`},
+    {l:"Demand unseated", v:r.unmetPct.toFixed(1)+"%", s:`${fmtNum(r.turnedAway)} patients`,
+     c: r.unmetPct >= 10 ? "crit" : r.unmetPct >= 3 ? "warn" : "ok"},
+    {l:"Result before leaving", v:r.sameSession.toFixed(0)+"%", s:`within ${BASE.sameSessionMin} min`,
+     c: r.sameSession >= 95 ? "ok" : r.sameSession >= 60 ? "warn" : "crit"},
+    {l:"Report turnaround", v:r.turnP95 < 1 ? (r.turnP95*60).toFixed(0)+" min" : r.turnP95.toFixed(1)+" h", s:"p95"},
+    {l:"Referral wait", v:r.aP95.toFixed(0)+" d", s:"p95",
+     c: r.aP95 > 30 ? "crit" : r.aP95 > 7 ? "warn" : "ok"},
+    {l:"Uploaded", v:fmtNum(r.gbYear,0)+" GB", s:`${fmtNum(r.images)} images/yr`}
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(t => `
+    <div class="tile">
+      <div class="t-label">${t.l}</div>
+      <div class="t-val ${t.c||""}">${t.v}</div>
+      <div class="t-sub">${t.s}</div>
+    </div>`).join("");
+
+  document.querySelector("#detail tbody").innerHTML = `
+    <tr><td>Capture &amp; quality gate</td><td class="n">${fmtNum(r.presented)} patients</td><td class="n">—</td><td class="n">—</td></tr>
+    <tr><td>Uplink transfer</td><td class="n">${fmtNum(r.images)} images</td><td class="n">${r.upMean.toFixed(2)} min</td><td class="n">${r.upP95.toFixed(2)} min</td></tr>
+    <tr><td>Central processing</td><td class="n">${fmtNum(r.images)} images</td><td class="n">${r.procMean.toFixed(2)} min</td><td class="n">${r.procP95.toFixed(2)} min</td></tr>
+    <tr><td>Human adjudication</td><td class="n">${fmtNum(r.humanCases)} cases</td><td class="n">${r.gMean.toFixed(2)} h</td><td class="n">${r.gP95.toFixed(2)} h</td></tr>
+    <tr><td>Specialist referral</td><td class="n">${fmtNum(r.refCases)} cases</td><td class="n">${r.aMean.toFixed(1)} d</td><td class="n">${r.aP95.toFixed(0)} d</td></tr>`;
+}
+
+let pending = null;
+function run(){
+  const dot = document.getElementById("dot"), txt = document.getElementById("runtxt");
+  dot.classList.add("busy"); txt.textContent = "simulating";
+  requestAnimationFrame(() => {
+    const p = readParams();
+    const t0 = performance.now();
+    const r = simulate(p);
+    render(r, p);
+    dot.classList.remove("busy");
+    txt.textContent = `${fmtNum(r.screened)} patients · ${(performance.now()-t0).toFixed(0)} ms`;
+  });
+}
+function schedule(){ clearTimeout(pending); pending = setTimeout(run, 110); }
+
+for (const id of IDS) document.getElementById(id).addEventListener("input", schedule);
+document.getElementById("reset").addEventListener("click", () => {
+  const d = {annualPatients:100000, sites:8, sessionHours:6, uplinkIdx:4,
+             workers:2, procMeanSec:11, graderFTE:2, ophthFTE:1,
+             pDisagree:0.22, pReferable:0.07};
+  for (const id of IDS) document.getElementById(id).value = d[id];
+  run();
+});
+
+run();
+</script>
+</body>
+</html>

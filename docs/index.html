@@ -247,6 +247,21 @@
   .stack-card ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 0.92rem; }
   .stack-card li { margin-bottom: 4px; }
 
+  a.capacity-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.capacity-link:hover { border-color: var(--accent-green); transform: translateY(-2px); }
+  a.capacity-link:focus-visible { outline: 2px solid var(--accent-green); outline-offset: 3px; }
+  a.capacity-link h3 { color: var(--accent-green); }
+  a.capacity-link p { margin: 10px 0 0; color: var(--muted); font-size: 0.92rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.capacity-link:hover { transform: none; }
+  }
+
   /* ---------- Honesty ---------- */
   .caveats {
     background: var(--dark-green);
@@ -309,6 +324,7 @@
         <a href="#modes">Modes</a>
         <a href="#decisions">Design</a>
         <a href="#stack">Stack</a>
+        <a href="#capacity">Capacity</a>
         <a href="#limits">Limitations</a>
       </div>
       <a class="btn btn-primary" href="https://github.com/Shaurya-web548/DRishti">View on GitHub</a>
@@ -620,6 +636,33 @@
           <li>APTOS 2019 / IDRiD / Messidor-2 loaders</li>
         </ul>
       </div>
+    </div>
+  </div>
+</section>
+
+<section id="capacity">
+  <div class="wrap">
+    <h2>Does it scale to a district?</h2>
+    <p class="section-lede">
+      A grading algorithm is only useful inside a programme that can carry it. So
+      the whole telemedicine pipeline — acquisition, uplink, compute, grader
+      shifts and specialist slots — was simulated at 100,000 patients a year.
+      The finding: the AI is nowhere near the bottleneck. The ophthalmologist is.
+    </p>
+
+    <div class="stack">
+      <a class="stack-card capacity-link" href="simulator.html">
+        <h3>Interactive model &rarr;</h3>
+        <p>Move a slider and the full 250-day discrete-event simulation re-runs in
+           the browser. Watch which resource turns red as you scale volume, or as
+           per-image compute time rises.</p>
+      </a>
+      <a class="stack-card capacity-link" href="capacity-report.html">
+        <h3>Written findings &rarr;</h3>
+        <p>Bottleneck ranking, resource sweeps, volume scaling, and the minimum
+           configuration that meets a 100,000-patient target — with the
+           assumptions behind each number.</p>
+      </a>
     </div>
   </div>
 </section>
