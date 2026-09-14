@@ -62,7 +62,7 @@ fundus image
 ### Two runtime modes, chosen automatically
 
 | Mode | When | What you get |
-|------|------|--------------|
+|------|------|--------------||
 | `real_full` | A trained `drClassifier.mat` loads successfully | CNN + rules combined, Grad-CAM, calibrated confidence, lesion overlay |
 | `real_no_cnn` | Model missing, unreadable, or untrained | Rule-based ICDR grade + lesion overlay. No Grad-CAM, no confidence score |
 
