@@ -1,4 +1,4 @@
-# DRishti — Diabetic Retinopathy Screening
+.# DRishti — Diabetic Retinopathy Screening
 
 An end-to-end diabetic retinopathy (DR) screening pipeline: a fundus photograph
 goes in, and an ICDR grade (0–4), a referral decision, an annotated lesion
